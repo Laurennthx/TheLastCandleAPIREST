@@ -135,7 +135,7 @@ class UserScene extends Phaser.Scene {
         }
 
         $.ajax({
-            url: "http://localhost:8080/api/users/",
+            url: "/api/users/",
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify({
@@ -173,7 +173,7 @@ class UserScene extends Phaser.Scene {
         }
 
         $.ajax({
-            url: "http://localhost:8080/api/users/login",
+            url: "/api/users/login",
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify({
