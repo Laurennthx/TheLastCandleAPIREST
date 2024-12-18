@@ -20,7 +20,6 @@ class WelcomeScene extends Phaser.Scene {
         const background = this.add.image(0, 0, "BGimage").setOrigin(0, 0);
         background.setDisplaySize(1920, 1080);
 
-        // Archivo main.js
         window.GameData = {
             currentUser: null, // Para guardar el usuario con el que se inicia sesión
         };

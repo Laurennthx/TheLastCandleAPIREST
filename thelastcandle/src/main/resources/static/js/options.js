@@ -126,7 +126,7 @@ class OptionsScene extends Phaser.Scene {
 
     // Método para mostrar los errores en el cuadro de texto y hacer que desaparezca después de unos segundos
     showError(message, x, y, color) {
-        if(!color) color = '#ff0000'
+        if (!color) color = '#ff0000'
         this.errorText.setText(message);
         this.errorText.setPosition(x, y);
         this.errorText.setStyle({ fill: color });
