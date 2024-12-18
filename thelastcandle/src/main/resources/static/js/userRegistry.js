@@ -1,30 +1,30 @@
 class UserScene extends Phaser.Scene {
-    constructor(){
-        super({key: 'UserScene'});
+    constructor() {
+        super({ key: 'UserScene' });
 
     }
 
-    preload(){
+    preload() {
         this.load.image("userBG", 'assets/UI/userAccount.png');
         this.load.image("bSignIn", 'assets/UI/SignIn_Button.png');
         this.load.image("bSignUp", 'assets/UI/SignUp_Button.png');
         this.load.image("inputBG", 'assets/UI/User_Password.png');
-        
+
     }
 
 
-    create(){
+    create() {
 
         // inmagen de fondo
-        const backgroundMenu = this.add.image(0,0, "userBG").setOrigin(0,0);
+        const backgroundMenu = this.add.image(0, 0, "userBG").setOrigin(0, 0);
         backgroundMenu.setDisplaySize(1920, 1080);
 
         // Crear campos de texto
         const usernameFieldUp = this.createInputField(530, 730, 'Username');
         const passwordFieldUp = this.createInputField(530, 830, 'Password', true);
-        const usernameFieldIn= this.createInputField(1390, 730, 'Username');
+        const usernameFieldIn = this.createInputField(1390, 730, 'Username');
         const passwordFieldIn = this.createInputField(1390, 830, 'Password', true);
-        
+
         // Crear un cuadro de texto para mostrar errores
         this.errorText = this.add.text(960, 500, '', {
             font: '24px Arial',
@@ -35,40 +35,40 @@ class UserScene extends Phaser.Scene {
 
         // boton sign up
         const signUp_button = this.add.image(530, 950, "bSignUp")
-        .setInteractive()
-        .on('pointerdown', () => {
-            const username = usernameFieldUp.getData('value');
-            const password = passwordFieldUp.getData('value');
-            this.sound.play("select"); 
-            console.log("Sign Up:", username, "***");
-            this.handleSignUp(username, password);
+            .setInteractive()
+            .on('pointerdown', () => {
+                const username = usernameFieldUp.getData('value');
+                const password = passwordFieldUp.getData('value');
+                this.sound.play("select");
+                console.log("Sign Up:", username, "***");
+                this.handleSignUp(username, password);
 
-            
-        }).on('pointerover', () => {
-            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-        });  
-        signUp_button.setScale(0.7,0.7);
+
+            }).on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            });
+        signUp_button.setScale(0.7, 0.7);
 
         // boton sign in
         const signIn_button = this.add.image(1390, 950, "bSignIn")
-        .setInteractive()
-        .on('pointerdown', () => {
-            const username = usernameFieldIn.getData('value');
-            const password = passwordFieldIn.getData('value');
-            this.sound.play("select"); 
-            console.log("Sign In:", username, "***");
-            this.handleSignIn(username, password);
-              
-        }).on('pointerover', () => {
-            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-        });  
-        signIn_button.setScale(0.7,0.7);
+            .setInteractive()
+            .on('pointerdown', () => {
+                const username = usernameFieldIn.getData('value');
+                const password = passwordFieldIn.getData('value');
+                this.sound.play("select");
+                console.log("Sign In:", username, "***");
+                this.handleSignIn(username, password);
+
+            }).on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            });
+        signIn_button.setScale(0.7, 0.7);
 
         // Activar entrada de teclado
         this.input.keyboard.on('keydown', (event) => {
-            this.handleKeyboardInput(event, usernameFieldUp, passwordFieldUp ,usernameFieldIn, passwordFieldIn);
+            this.handleKeyboardInput(event, usernameFieldUp, passwordFieldUp, usernameFieldIn, passwordFieldIn);
         });
-        
+
 
         // Variable para rastrear el campo de entrada actualmente activo
         this.currentField = null;
@@ -102,7 +102,7 @@ class UserScene extends Phaser.Scene {
         return inputText;
     }
 
-    handleKeyboardInput(event, usernameFieldUp, passwordFieldUp,usernameFieldIn, passwordFieldIn) {
+    handleKeyboardInput(event, usernameFieldUp, passwordFieldUp, usernameFieldIn, passwordFieldIn) {
         if (this.currentField) {
             const value = this.currentField.getData('value');
             const isPassword = this.currentField.getData('isPassword');
@@ -124,17 +124,23 @@ class UserScene extends Phaser.Scene {
     handleSignUp(username, password) {
         if (!username || !password) {
             console.error("Por favor, complete todos los campos.");
-            this.showError("Por favor, complete todos los campos.",530, 900);
+            this.showError("Por favor, complete todos los campos.", 530, 900);
             return;
+        }
+        else {
+            this.errorText.setText("Cargando...");
+            this.errorText.setPosition(530, 900);
+            this.errorText.setStyle({ fill: '#000000' });
+            this.errorText.setAlpha(1); // Mostrar el mensaje
         }
 
         $.ajax({
             url: "http://localhost:8080/api/users/",
             method: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ 
-                username: username, 
-                password: password 
+            data: JSON.stringify({
+                username: username,
+                password: password
             }),
             success: () => {
                 console.log("Usuario registrado con exito.");
@@ -144,10 +150,10 @@ class UserScene extends Phaser.Scene {
             error: (xhr) => {
                 if (xhr.status === 409) {
                     console.error("El usuario ya existe.");
-                    this.showError("El usuario ya existe.",530, 900);
+                    this.showError("El usuario ya existe.", 530, 900);
                 } else {
                     console.error("Error al registrar el usuario:", xhr.responseText);
-                    this.showError("Error al registrar el usuario.",530, 900);
+                    this.showError("Error al registrar el usuario.", 530, 900);
                 }
             }
         });
@@ -156,17 +162,23 @@ class UserScene extends Phaser.Scene {
     handleSignIn(username, password) {
         if (!username || !password) {
             console.error("Por favor, complete todos los campos.");
-            this.showError("Por favor, complete todos los campos.",1390, 900);
+            this.showError("Por favor, complete todos los campos.", 1390, 900);
             return;
         }
-    
+        else {
+            this.errorText.setText("Cargando...");
+            this.errorText.setPosition(1390, 900);
+            this.errorText.setStyle({ fill: '#000000' });
+            this.errorText.setAlpha(1); // Mostrar el mensaje
+        }
+
         $.ajax({
             url: "http://localhost:8080/api/users/login",
             method: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ 
-                username: username, 
-                password: password 
+            data: JSON.stringify({
+                username: username,
+                password: password
             }),
             success: (response) => {
                 console.log(response); // Respuesta del servidor (e.g., "Login successful")
@@ -176,32 +188,39 @@ class UserScene extends Phaser.Scene {
             error: (xhr) => {
                 if (xhr.status === 401) {
                     console.error("Credenciales incorrectas.");
-                    this.showError("Credenciales incorrectas.",1390, 900);
+                    this.showError("Credenciales incorrectas.", 1390, 900);
                 } else if (xhr.status === 404) {
                     console.error("Usuario no encontrado.");
-                    this.showError("Usuario no encontrado.",1390, 900);
+                    this.showError("Usuario no encontrado.", 1390, 900);
                 } else {
                     console.error("Error al iniciar sesión:", xhr.responseText);
-                    this.showError("Error al iniciar sesión.",1390, 900);
+                    this.showError("Error al iniciar sesión.", 1390, 900);
                 }
             }
         });
     }
 
-   
-   // Método para mostrar los errores en el cuadro de texto y hacer que desaparezca después de unos segundos
-    showError(message,x,y) {
+
+    // Método para mostrar los errores en el cuadro de texto y hacer que desaparezca después de unos segundos
+    showError(message, x, y, time) {
         this.errorText.setText(message);
-        this.errorText.setPosition(x,y);
+        this.errorText.setPosition(x, y);
+        this.errorText.setStyle({ fill: '#ff0000' });
         this.errorText.setAlpha(1); // Mostrar el mensaje
 
+        var delay
+        if (!time) {
+            delay = 3000
+        }
+        else delay = time
+
         // Hacer que el mensaje desaparezca después de 3 segundos (3000 milisegundos)
-        this.time.delayedCall(3000, () => {
+        this.time.delayedCall(delay, () => {
             this.errorText.setAlpha(0);  // Desaparecer el mensaje
         }, [], this);
     }
 
-    update(){}
+    update() { }
 
 
 
