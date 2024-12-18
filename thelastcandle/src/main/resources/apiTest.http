@@ -19,12 +19,12 @@
 # }
 
 # Actualizar la contraseña de un usuario
-PUT http://localhost:8080/api/users/andre/password
-Content-Type: application/json
+# PUT http://localhost:8080/api/users/andre/password
+# Content-Type: application/json
 
-{
-  "password": "  as"
-}
+# {
+#   "password": "  as"
+# }
 
 # # Eliminar un usuario
 # DELETE http://localhost:8080/api/users/tu_usuario
