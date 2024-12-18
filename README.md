@@ -378,3 +378,21 @@ La pantalla principal del videojuego que muestra a los dos protagonistas, desde 
 ![Interfaz_DemonioGana](https://github.com/user-attachments/assets/ee382b10-0e90-4136-9e0d-98f6350a2e52)
 
 
+
+# FASE 3: API REST
+
+En esta tercera fase se ha implementado la comunicación entre el cliente y el servidor empleando el servicio REST.  
+
+## Diagrama de navegación
+
+A continuación, se muestra actualizado el diagrama de las interfaces que componen el videojuego:
+
+
+## Diagrama de clases 
+
+A continuación, se muestran las relaciones entre las distintas clases que forman el proyecto:
+
+
+### Compilación
+
+
