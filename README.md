@@ -390,14 +390,14 @@ Chat:
 
 A continuación, se muestra actualizado el diagrama de las interfaces que componen el videojuego:
 
-![Interfaz_ExorcistaGana](imagenesGDD/DiagramaNavegacion.png)
+![Diagrama_Navegación](imagenesGDD/DiagramaNavegacion.png)
 
 
 ## Diagrama de clases 
 
 A continuación, se muestran las relaciones entre las distintas clases que forman el proyecto:
 
-![Interfaz_ExorcistaGana](imagenesGDD/diagramaDeClases.png)
+![Diagrama_De_Clases](imagenesGDD/diagramaDeClases.png)
 
 
 ### Compilación
