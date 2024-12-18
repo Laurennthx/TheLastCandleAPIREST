@@ -557,6 +557,11 @@ class GameScene extends Phaser.Scene {
         console.log(isVisible ? "Menú oculto" : "Menú mostrado");
 
         this.isPaused = !isVisible;
+        if(!isVisible){
+            this.resetKeys()
+            this.demon.anims.stop('demonWalk'); // parar animación
+            this.exorcist.anims.stop('walk'); // parar animación
+        } 
 
     }
 
@@ -948,6 +953,15 @@ class GameScene extends Phaser.Scene {
                 this.exorcist.anims.stop('walk'); // parar animación
             }
         });
+    }
+
+    resetKeys(){
+        for(let i = 0; i < this.keysPressedEx.length; i++){
+            this.keysPressedEx[i][1] = false;
+        }
+        for(let i = 0; i < this.keysPressedDe.length; i++){
+            this.keysPressedDe[i][1] = false;
+        }
     }
 
     characterIsStill(character) {
