@@ -35,8 +35,13 @@ public class UserDAO {
     private ObjectMapper objectMapper;
 
     public List<User> getAllUsers() throws IOException {
-        var objectMapper = new ObjectMapper();
 
+        File directory = new File(usersPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        var objectMapper = new ObjectMapper();
         Path path = Paths.get(usersPath);
 
         try {
@@ -62,6 +67,10 @@ public class UserDAO {
     }
 
     public Optional<User> getUser(String username) {
+        File directory = new File(usersPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
         try {
             // Construct the file path dynamically based on the username
             String filePath = this.usersPath + "/" + username + ".json";
@@ -74,6 +83,10 @@ public class UserDAO {
 
     // Method to update the User in the JSON file
     public boolean updateUser(User updatedUser) {
+        File directory = new File(usersPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
         try {
             // Construct the file path dynamically based on the username
             String filePath = this.usersPath + "/" + updatedUser.getUsername() + ".json";
@@ -90,6 +103,10 @@ public class UserDAO {
 
     // Method to delete the User from the JSON file
     public boolean deleteUser(String username) {
+        File directory = new File(usersPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
         try {
             // Construct the file path dynamically based on the username
             String filePath = this.usersPath + "/" + username + ".json";
