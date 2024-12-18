@@ -123,12 +123,12 @@ class UserScene extends Phaser.Scene {
 
     handleSignUp(username, password) {
         if (!username || !password) {
-            console.error("Por favor, complete todos los campos.");
-            this.showError("Por favor, complete todos los campos.", 530, 900);
+            console.error("Please, fill in all the fields.");
+            this.showError("Please, fill in all the fields.", 530, 900);
             return;
         }
         else {
-            this.errorText.setText("Cargando...");
+            this.errorText.setText("Loading...");
             this.errorText.setPosition(530, 900);
             this.errorText.setStyle({ fill: '#000000' });
             this.errorText.setAlpha(1); // Mostrar el mensaje
@@ -143,17 +143,19 @@ class UserScene extends Phaser.Scene {
                 password: password
             }),
             success: () => {
-                console.log("Usuario registrado con exito.");
+                console.log("User registered successfully.");
+                // Almacenar el usuario
+                window.GameData.currentUser = username;
                 this.scene.stop("UserScene");
                 this.scene.start("MenuScene");
             },
             error: (xhr) => {
                 if (xhr.status === 409) {
-                    console.error("El usuario ya existe.");
-                    this.showError("El usuario ya existe.", 530, 900);
+                    console.error("The user already exists.");
+                    this.showError("The user already exists.", 530, 900);
                 } else {
-                    console.error("Error al registrar el usuario:", xhr.responseText);
-                    this.showError("Error al registrar el usuario.", 530, 900);
+                    console.error("Error registering user:", xhr.responseText);
+                    this.showError("Error registering user.", 530, 900);
                 }
             }
         });
@@ -161,12 +163,12 @@ class UserScene extends Phaser.Scene {
 
     handleSignIn(username, password) {
         if (!username || !password) {
-            console.error("Por favor, complete todos los campos.");
-            this.showError("Por favor, complete todos los campos.", 1390, 900);
+            console.error("Please, fill in all the fields.");
+            this.showError("Please, fill in all the fields.", 1390, 900);
             return;
         }
         else {
-            this.errorText.setText("Cargando...");
+            this.errorText.setText("Loading...");
             this.errorText.setPosition(1390, 900);
             this.errorText.setStyle({ fill: '#000000' });
             this.errorText.setAlpha(1); // Mostrar el mensaje
@@ -175,26 +177,28 @@ class UserScene extends Phaser.Scene {
         $.ajax({
             url: "/api/users/login",
             method: "POST",
-            contentType: "application/json",
+            contentType: "application/json; charset=utf-8",
             data: JSON.stringify({
                 username: username,
                 password: password
             }),
             success: (response) => {
                 console.log(response); // Respuesta del servidor (e.g., "Login successful")
+                // Almacenar el usuario
+                window.GameData.currentUser = username;
                 this.scene.stop("UserScene");
                 this.scene.start("MenuScene");
             },
             error: (xhr) => {
                 if (xhr.status === 401) {
-                    console.error("Credenciales incorrectas.");
-                    this.showError("Credenciales incorrectas.", 1390, 900);
+                    console.error("Incorrect credentials.");
+                    this.showError("Incorrect credentials.", 1390, 900);
                 } else if (xhr.status === 404) {
-                    console.error("Usuario no encontrado.");
-                    this.showError("Usuario no encontrado.", 1390, 900);
+                    console.error("User not found.");
+                    this.showError("User not found.", 1390, 900);
                 } else {
-                    console.error("Error al iniciar sesión:", xhr.responseText);
-                    this.showError("Error al iniciar sesión.", 1390, 900);
+                    console.error("Error logging in:", xhr.responseText);
+                    this.showError("Error logging in.", 1390, 900);
                 }
             }
         });
@@ -202,20 +206,14 @@ class UserScene extends Phaser.Scene {
 
 
     // Método para mostrar los errores en el cuadro de texto y hacer que desaparezca después de unos segundos
-    showError(message, x, y, time) {
+    showError(message, x, y) {
         this.errorText.setText(message);
         this.errorText.setPosition(x, y);
         this.errorText.setStyle({ fill: '#ff0000' });
         this.errorText.setAlpha(1); // Mostrar el mensaje
 
-        var delay
-        if (!time) {
-            delay = 3000
-        }
-        else delay = time
-
         // Hacer que el mensaje desaparezca después de 3 segundos (3000 milisegundos)
-        this.time.delayedCall(delay, () => {
+        this.time.delayedCall(3000, () => {
             this.errorText.setAlpha(0);  // Desaparecer el mensaje
         }, [], this);
     }
