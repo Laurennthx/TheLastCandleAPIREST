@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.86.0/phaser.min.js"></script> 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/welcome.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/userRegistry.js"></script>
+    <script src="js/intro.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/gameCopy.js"></script>
+    <script src="js/gameCopyCopy.js"></script>
+    <script src="js/endgame.js"></script>
+    <script src="js/credits.js"></script>
+    <script src="js/options.js"></script>
+    <script src="js/gamePruebas.js"></script>
+    <script src="js/loading.js"></script>
+    <script src="js/exorcistWins.js"></script>
+    <script src="js/tutorial.js"></script>
+    <script src="js/chooseCharacter.js"></script>
+    <script src="js/gameMode.js"></script>
+    <script src="js/demonSkin"></script>
+    <script src="js/exorcistSkin.js"></script>
+
+    <style>
+        /* Set full height for the HTML and body to ensure the game container can take the full viewport height */
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+
+        /* Ensures the Phaser game canvas (inside the parent container) is centered */
+        #game-canvas {
+            display: block; /* Remove any inline space and allow it to be centered */
+            margin: auto;
+            border: 5px solid rgb(37, 40, 53); /* Add a white border of 5px */
+        }
+    </style>
+
+
+
+
+</head>
+<body>
+    <div id="game-canvas"></div>
+    <script>
+        // Game configuration
+        const config = {
+            type: Phaser.AUTO,
+            width: 1920,
+            height: 1080,
+
+            parent: 'game-canvas',  <!-- Este es el cambio que hice: el canvas se coloca dentro del div con id="game-canvas" -->
+            backgroundColor: '#000000',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    debug: false,
+                    gravity: { y: 0 }
+                }
+            },
+            scene: [WelcomeScene, UserScene, MenuScene, IntroGame, GameScene, GameSceneCopy, GameSceneCopyCopy, EndScene, CreditsScene, OptionsScene, GamePruebas, LoadingScene, ExorcistWinsScene, TutorialScene, ChoosingCharacterScene, GameModeScene, DemonSkin, ExorcistSkin]
+        };
+
+        // Create the game instance
+        const game = new Phaser.Game(config);
+        game.scene.start('WelcomeScene');
+
+    </script>
+</body>
+</html>

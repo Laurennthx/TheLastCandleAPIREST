@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ThelastcandleApplication<thelastcandle>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "es.urjc.grupo10.thelastcandle.ThelastcandleApplication",
+            "projectName": "thelastcandle",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

@@ -1,0 +1,100 @@
+class DemonSkin extends Phaser.Scene {
+    constructor() {
+        super({ key: 'DemonSkin' });
+        this.activeDemon = 2; // 1 para demonio 1, 2 para demonio 2
+        this.demonSprite = null; // Sprite del demonio actual
+    }
+
+    preload() {
+        this.load.audio("select", 'assets/Music/effects/click/oldRadio.mp3');
+        this.load.audio("hover", 'assets/Music/effects/click/darkButton.mp3');
+        
+        this.load.image("backgroundSkin", "assets/UI/skin/skinSelectionScene.jpg");
+        this.load.image("arrowRight", "assets/UI/skin/arrowRight.png");
+        this.load.image("arrowLeft", "assets/UI/skin/arrowLeft.png");
+        this.load.image("continueB", "assets/UI/skin/continueB.png");
+
+        // Animación demonio 1
+        this.load.spritesheet('demon1', 'assets/Animations/Demonio/Demonio/spriteSheetDemonio.png', {
+            frameWidth: 1276,
+            frameHeight: 1853
+        });
+
+        // Animación demonio 2
+        this.load.spritesheet('demon2', 'assets/Animations/Demonio2/demon2Spritesheet.png', {
+            frameWidth: 1275,
+            frameHeight: 1920
+        });
+    }
+
+    create() {
+        // Imagen de fondo
+        const backgroundSkin = this.add.image(0, 0, "backgroundSkin").setOrigin(0, 0);
+        backgroundSkin.setDisplaySize(1920, 1080);
+
+        // Flechas
+        const arrowRight = this.add.image(1200, 500, "arrowRight").setOrigin(0, 0).setScale(0.6);
+        const arrowLeft = this.add.image(550, 500, "arrowLeft").setOrigin(0, 0).setScale(0.6);
+
+        // Crear animaciones
+        this.anims.create({
+            key: 'demon1Anim',
+            frames: this.anims.generateFrameNumbers('demon1', { start: 0, end: 3 }),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'demon2Anim',
+            frames: this.anims.generateFrameNumbers('demon2', { start: 0, end: 3 }),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        // Crear sprite inicial
+        this.createDemonSprite();
+
+        // Interactividad de las flechas
+        arrowRight.setInteractive()
+        .on('pointerdown', () => {
+            this.sound.play('select'); // Reproducir sonido de selección
+            this.switchDemon();
+        })
+        .on('pointerover', () => {
+            this.sound.play('hover'); // Reproducir sonido al pasar el ratón por encima
+        });
+
+        arrowLeft.setInteractive()
+        .on('pointerdown', () => {
+            this.sound.play('select'); // Reproducir sonido de selección
+            this.switchDemon();
+        })
+        .on('pointerover', () => {
+            this.sound.play('hover'); // Reproducir sonido al pasar el ratón por encima
+        });
+
+    }
+
+    createDemonSprite() {
+        // Eliminar el sprite anterior si existe
+        if (this.demonSprite) {
+            this.demonSprite.destroy();
+        }
+
+        // Crear nuevo sprite basado en el demonio activo
+        const demonKey = this.activeDemon === 1 ? 'demon1' : 'demon2';
+        const animationKey = this.activeDemon === 1 ? 'demon1Anim' : 'demon2Anim';
+
+        this.demonSprite = this.add.sprite(960, 570, demonKey);
+        this.demonSprite.setScale(0.27);
+        this.demonSprite.play(animationKey);
+    }
+
+    switchDemon() {
+        // Cambiar entre los demonios
+        this.activeDemon = this.activeDemon === 1 ? 2 : 1;
+
+        // Crear el nuevo sprite
+        this.createDemonSprite();
+    }
+}
