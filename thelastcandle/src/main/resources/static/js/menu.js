@@ -125,8 +125,8 @@ class MenuScene extends Phaser.Scene {
         if (users.length > 0) {
             const usersText = users.join('\n');  // Unir los usuarios en una cadena
             this.userList = this.add.text(800, 300, usersText, {
-                fontSize: '32px',
-                fill: '#fff',
+                fontSize: '45px',
+                fill: '#000',
                 fontFamily: 'Arial'
             });
             this.userList.setOrigin(0.5);
