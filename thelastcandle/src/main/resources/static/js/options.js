@@ -7,12 +7,20 @@ class OptionsScene extends Phaser.Scene {
     preload() {
         this.load.audio("introMusic", 'assets/Music/sinister.mp3');
         
-        this.load.image("OptionsBG", "assets/UI/options.jpg");
+        this.load.image("OptionsBG", "assets/UI/ajustes/fondo.png");
         
         this.load.image("on_music", "assets/UI/ON.png");
         this.load.image("off_music", "assets/UI/OFF.png");
         
         this.load.image("backButton", "assets/UI/return.png");
+
+        // nuevos ajustes
+        this.load.image("BGInput", "assets/UI/ajustes/BGInput.png");
+        this.load.image("ChangeB", "assets/UI/ajustes/ChangeB.png");
+        this.load.image("ChangeB", "assets/UI/ajustes/ChangeB.png");
+        this.load.image("deleteAccountB", "assets/UI/ajustes/deleteAccountB.png");
+
+
     }
     
     create() {
@@ -50,6 +58,36 @@ class OptionsScene extends Phaser.Scene {
             this.sound.play("hover"); // Reproduce sonido al pasar el cursor
         });       
         off_music.setScale(0.5,0.5);
+
+
+        // change
+        const BGInput = this.add.image(950, 760, "BGInput");
+        BGInput.setScale(0.5);
+
+        const changeB = this.add.image(950, 880, "ChangeB")
+        .setInteractive()
+        .on('pointerdown', () => {
+            this.sound.play("select");
+            this.bgMusic.stop();  
+        })
+        .on('pointerover', () => {
+            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+        });       
+        changeB.setScale(0.5);
+
+
+        // delete account
+        const deleteAccountB = this.add.image(1600, 750, "deleteAccountB")
+        .setInteractive()
+        .on('pointerdown', () => {
+            this.sound.play("select");
+            this.bgMusic.stop();  
+        })
+        .on('pointerover', () => {
+            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+        });       
+        deleteAccountB.setScale(0.5);
+
 
         // boton back
         const returnButton = this.add.image(175, 90, "backButton")
