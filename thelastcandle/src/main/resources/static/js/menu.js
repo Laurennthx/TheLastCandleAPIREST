@@ -102,7 +102,13 @@ class MenuScene extends Phaser.Scene {
     // Método para obtener los usuarios conectados
     async getConnectedUsers() {
         try {
-            const response = await fetch('/api/connected-users');  // Llamada a la API
+            const response = await fetch('/api/connected-users', { //llamada a la API
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Username': window.GameData.currentUser // Enviar el nombre del usuario en el encabezado
+                }
+            });
             if (!response.ok) {
                 throw new Error('Error al obtener usuarios');
             }

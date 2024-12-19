@@ -4,6 +4,7 @@
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.86.0/phaser.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/connection.js"></script>
     <script src="js/welcome.js"></script>
     <script src="js/menu.js"></script>
     <script src="js/userRegistry.js"></script>
@@ -71,7 +72,7 @@
                     gravity: { y: 0 }
                 }
             },
-            scene: [ WelcomeScene, UserScene, MenuScene, IntroGame, GameScene, GameSceneCopy, GameSceneCopyCopy, EndScene, CreditsScene, OptionsScene, GamePruebas, LoadingScene, ExorcistWinsScene, TutorialScene, ChoosingCharacterScene, GameModeScene, DemonSkin, ExorcistSkin]
+            scene: [ WelcomeScene, UserScene, MenuScene, IntroGame, GameScene, GameSceneCopy, GameSceneCopyCopy, EndScene, CreditsScene, OptionsScene, GamePruebas, LoadingScene, ExorcistWinsScene, TutorialScene, ChoosingCharacterScene, GameModeScene, DemonSkin, ExorcistSkin,ConnectionManagerScene]
         };
 
         // Create the game instance
