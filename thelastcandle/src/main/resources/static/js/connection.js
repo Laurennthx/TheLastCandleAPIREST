@@ -6,6 +6,9 @@ class ConnectionManagerScene extends Phaser.Scene {
         this.connectionText = null;
     }
     
+    preload(){
+        
+    }
 
     create() {
         // Crear el overlay de conexión
