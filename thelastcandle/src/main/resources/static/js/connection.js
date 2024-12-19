@@ -39,7 +39,7 @@ class ConnectionManagerScene extends Phaser.Scene {
         console.log("¿tengo que activar overlay?");
         if (!this.overlayActive) {
         console.log("tengo que activar overlay");
-        this.show('Conexión con servidor perdida. Tratando de establecer la conexión...');
+        this.show('Connection to the server lost. Attempting to reconnect...');
         }
         //this.scene.getScenes(true).forEach(scene => {
         //    if (scene.input) scene.input.enabled = false; // Bloquear interacción en todas las escenas activas

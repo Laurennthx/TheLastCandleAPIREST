@@ -8,6 +8,17 @@
             "mainClass": "es.urjc.grupo10.thelastcandle.ThelastcandleApplication",
             "projectName": "thelastcandle",
             "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=64099 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=thelastcandle"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-DemoApplication<thelastcandle>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "es.urjc.grupo10.thelastcandle.DemoApplication",
+            "projectName": "thelastcandle",
+            "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
     ]

@@ -80,7 +80,7 @@ class OptionsScene extends Phaser.Scene {
             .on('pointerdown', () => {
                 const password = passwordField.getData('value');
                 this.sound.play("select");
-                console.log("Cambiando contraseña...");
+                console.log("Changing password...");
                 this.handleChangePassword(window.GameData.currentUser, password);
             }).on('pointerover', () => {
                 this.sound.play("hover"); // Reproduce sonido al pasar el cursor

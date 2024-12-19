@@ -110,11 +110,11 @@ class MenuScene extends Phaser.Scene {
                 }
             });
             if (!response.ok) {
-                throw new Error('Error al obtener usuarios');
+                throw new Error('Failed to retrieve users.');
             }
 
             const data = await response.json();  // Se asume que la respuesta es un JSON
-            console.log("Usuarios conectados:", data);
+            console.log("Connected users:", data);
 
             // Mostrar los usuarios conectados en el chat (por ejemplo)
             this.showConnectedUsers(data);
