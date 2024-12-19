@@ -384,7 +384,6 @@ La pantalla principal del videojuego que muestra a los dos protagonistas, desde 
 En esta tercera fase se ha implementado la comunicación entre el cliente y el servidor empleando el servicio REST.  
 
 En esta implementación se puede crear una lista de cuentas de distintos usuarios, la cual se serializa y deserializa según la función que se realice sobre ella. Cada usuario, a su vez, se almacenará con un nombre, una contraseña codificada y el número de victorias obtenidas. 
-Chat:
 
 ## Diagrama de navegación
 
