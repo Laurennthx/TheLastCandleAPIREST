@@ -1,0 +1,10 @@
+Integrantes:
+JAVIER ÁLVAREZ PÉREZ
+LUCAS GARCÍA MARCOS
+LAURA GARCÍA MARTÍN
+CRISTINA GONZÁLEZ DE LOPE
+ANDRÉ MIGUEL PÉREZ SÁNCHEZ
+
+Repositorios:
+https://github.com/Laurennthx/TheLastCandleAPIREST
+https://github.com/Laurennthx/TheLastCandle

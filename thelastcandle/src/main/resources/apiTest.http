@@ -29,4 +29,10 @@
 # # Eliminar un usuario
 # DELETE http://localhost:8080/api/users/tu_usuario
 
-GET http://localhost:8080/api/connected-users
+# GET http://localhost:8080/api/connected-users
+# username: nombre
+
+# GET http://localhost:8080/api/connected-users
+# username: pepe
+
+# GET http://localhost:8080/api/status

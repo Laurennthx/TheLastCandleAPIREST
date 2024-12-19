@@ -62,10 +62,10 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			<configuration>
-			<mainClass>es.urjc.grupo10.thelastcandle.ThelastcandleApplication</mainClass>
-			<layout>ZIP</layout>
-			</configuration>
+				<configuration>
+					<mainClass>es.urjc.grupo10.thelastcandle.ThelastcandleApplication</mainClass>
+					<layout>ZIP</layout>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
