@@ -1,5 +1,3 @@
-// menu.js chat
-
 class MenuScene extends Phaser.Scene {
     constructor(){
         super({key: 'MenuScene'});
@@ -81,7 +79,7 @@ class MenuScene extends Phaser.Scene {
 
     
 
-        // # region chat
+        // #region chat
 
         // Elementos del chat
         const chatFade = this.add.image(960, 540, "chatFade").setVisible(false).setScale(1);
@@ -166,4 +164,3 @@ class MenuScene extends Phaser.Scene {
 
 
 }
-

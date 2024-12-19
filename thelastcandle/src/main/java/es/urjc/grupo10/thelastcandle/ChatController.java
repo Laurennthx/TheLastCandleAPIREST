@@ -1,65 +1,109 @@
 package es.urjc.grupo10.thelastcandle;
 
-import java.util.ArrayList;
+import java.io.BufferedWriter;
+import java.io.File;  // Import the File class
+import java.io.FileWriter;
+import java.io.IOException;  // Import the IOException class to handle errors
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/chat")
+@RequestMapping("/mensajes")
 public class ChatController {
     
-    private final List<ChatMessage> messages = new ArrayList<>();
-    private final AtomicInteger lastId = new AtomicInteger(0);
+        // HashMap para almacenar el chat del juego
+        Map<Long, Chat> chatMap = new ConcurrentHashMap<>();
+        AtomicLong nextId = new AtomicLong(0);
+        private static final String FILE_NAME = "mensajes.txt";
+          public ChatController() {
+            loadMensajesFromFile();
+          }
 
-
-    @GetMapping()
-    public ChatResponse getMessages(@RequestParam(defaultValue = "0") int since) {
-        List<String> newMessages = new ArrayList<>();
-        int latestId = since;
-
-        synchronized (messages) {
-            for (ChatMessage msg : messages) {
-                if (msg.getId() > since) {
-                    newMessages.add(msg.getText());
-                    latestId = msg.getId();
+    // Método para cargar mensajes desde el fichero
+    private void loadMensajesFromFile() {
+        try {
+            File file = new File(FILE_NAME);
+            if (file.exists()) {
+                List<String> lines = Files.readAllLines(Paths.get(FILE_NAME));
+                long maxId = 0;
+                System.out.println("File found, reading players...");
+                for (String line : lines) {
+                    System.out.println("Processing line: " + line);
+                    String[] parts = line.split(";", 3);
+                    if (parts.length == 3) {
+                        try {
+                            long id = Long.parseLong(parts[0]);
+                            String name = parts[1];
+                            String message = parts[2];
+                            chatMap.put(id, new Chat(id, name, message));
+                            System.out.println("Chat loaded: ID=" + id + ", Name=" + name + ", Mensaje=" + message);
+                            if (id > maxId) {
+                                maxId = id;
+                            }
+                        } catch (NumberFormatException e) {
+                            System.err.println("Invalid number format in line: " + line);
+                        }
+                    }
                 }
+                nextId.set(maxId);
+            } else {
+                Files.createFile(Paths.get(FILE_NAME));
+                
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        return new ChatResponse(newMessages, latestId);
     }
-
-    @PostMapping
-    public void postMessage(@RequestParam String message) {
-        synchronized (messages) {
-            messages.add(new ChatMessage(lastId.incrementAndGet(), message));
-            if (messages.size() > 50) {
-                messages.remove(0); // Keep only the last 50 messages
+    // Método para guardar los mensajes en el fichero
+    private void saveMensajesToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
+            for (Chat chat : chatMap.values()) {
+                writer.write(chat.getId() + ";" + chat.getNombre() + ";" + chat.getMensaje());
+                writer.newLine();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-
-    public static class ChatResponse {
-        private final List<String> messages;
-        private final int timestamp;
-
-        public ChatResponse(List<String> messages, int timestamp) {
-            this.messages = messages;
-            this.timestamp = timestamp;
+        // ^Mirar si existe un fichero que lllama mensajes.txt, si existe, miro las líneas uqe tiene. y cargo las líneas en la aplicación. Esto sustituye la línea 29. 
+        // Cada vez que se anade un nuevo mensaje se vuelca en el fichero
+        // Cada vez que se elimina, se elimina la línea del fichero, actualización...
+        
+        @GetMapping
+        public Collection<Chat> obtenerMensajes() {
+            return chatMap.values();
         }
-
-        public List<String> getMessages() {
-            return messages;
+    
+        // Petición POST para añadir nuevo mensaaje
+        @PostMapping
+        @ResponseStatus(HttpStatus.CREATED)
+        public Chat añadirMensaje(@RequestBody Chat nuevoMensaje) {
+            long id;
+            if (chatMap.isEmpty()) {
+                id = 0;
+                nextId.set(id);
+            } else {
+                id = nextId.incrementAndGet();
+            }
+            nuevoMensaje.setID(id);
+            chatMap.put(nuevoMensaje.getId(), nuevoMensaje);
+                saveMensajesToFile();
+                return nuevoMensaje;
+            }
+    
+        
         }
-
-        public int getTimestamp() {
-            return timestamp;
-        }
-    }
-}
+     
