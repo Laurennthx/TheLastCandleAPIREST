@@ -337,7 +337,7 @@ class GameScene extends Phaser.Scene {
 
         // Radios del gradiente
         this.vScaleSmall = 0.2
-        this.vScaleBig = 1.2
+        this.vScaleBig = 1.4
 
         let visionInicialDemon
         let visionInicialExorcist
