@@ -399,6 +399,13 @@ A continuación, se muestran las relaciones entre las distintas clases que forma
 ![Diagrama_De_Clases](imagenesGDD/diagramaDeClases.png)
 
 
-### Compilación
-Explicacion .jar
+## Compilación
+
+Para poder ejecutar el .jar del proyecto se tienen que realizar los siguientes pasos:
+
+* **Antes de empezar**: su dispositivo deberá de contar con la versión Java 21, además, tendrá que tener instalado el gestor de dependencias Maven.
+
+* **Proceso de compilación del proyecto**: deberá de dirigirse al directorio de raíz del proyecto que es el que contiene el ejecutable de maven. Deberá ejecutar: .\mvnw.cmd package.
+
+* **Ejecución**: el archivo .jar será ejecutado mediante: java - jar .\target\thelastcandle-0.0.1-SNAPSHOT.jar.original
 
