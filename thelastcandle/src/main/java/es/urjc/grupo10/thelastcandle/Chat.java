@@ -2,12 +2,12 @@ package es.urjc.grupo10.thelastcandle;
 public class Chat {
 
     private long id;
-    private String nombre;
-    private String mensaje;
+    private String username;
+    private String message;
 
-public Chat(long id, String nombre, String mensaje){
-    this.nombre= nombre;
-    this.mensaje= mensaje;
+public Chat(long id, String nombre, String message){
+    this.username= nombre;
+    this.message= message;
 
 }
 
@@ -18,25 +18,25 @@ public void setID(long id){
     this.id=id;
 }
 
-public String getNombre(){
-return nombre;
+public String getUsername(){
+return username;
 }
-public void setNombre(String nombre){
-    this.nombre= nombre;
+public void setUsername(String nombre){
+    this.username= nombre;
 
 }
 
-public String getMensaje(){
-    return mensaje;
+public String getMessage(){
+    return message;
     }
-public void setMensaje(String mensaje){
-    this.mensaje= mensaje;
+public void setMessage(String message){
+    this.message= message;
 }
 
 
     @Override
     public String toString() {
-        return "Mensaje [id=" + id + ", NombreUsuario=" + nombre + ", mensaje=" + mensaje + "]";
+        return "message [id=" + id + ", NombreUsuario=" + username + ", message=" + message + "]";
     }
 
 }

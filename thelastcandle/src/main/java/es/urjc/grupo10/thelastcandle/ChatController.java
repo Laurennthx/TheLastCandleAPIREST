@@ -1,12 +1,11 @@
 package es.urjc.grupo10.thelastcandle;
 
 import java.io.BufferedWriter;
-import java.io.File;  // Import the File class
+import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;  // Import the IOException class to handle errors
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,19 +20,21 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/mensajes")
+@RequestMapping("/api/chat")
 public class ChatController {
-    
-        // HashMap para almacenar el chat del juego
-        Map<Long, Chat> chatMap = new ConcurrentHashMap<>();
-        AtomicLong nextId = new AtomicLong(0);
-        private static final String FILE_NAME = "mensajes.txt";
-          public ChatController() {
-            loadMensajesFromFile();
-          }
 
-    // Método para cargar mensajes desde el fichero
-    private void loadMensajesFromFile() {
+    // HashMap para almacenar el chat del juego
+    Map<Long, Chat> chatMap = new ConcurrentHashMap<>();
+    AtomicLong nextId = new AtomicLong(0);
+    private static final String FILE_NAME = "mensajes.txt";
+
+    public ChatController() {
+        loadMessagesFromFile();
+    }
+
+    // Método para cargar mensajes desde el fichero en el ConcurrentHashMap al
+    // iniciar el juego
+    private void loadMessagesFromFile() {
         try {
             File file = new File(FILE_NAME);
             if (file.exists()) {
@@ -61,49 +62,49 @@ public class ChatController {
                 nextId.set(maxId);
             } else {
                 Files.createFile(Paths.get(FILE_NAME));
-                
+
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     // Método para guardar los mensajes en el fichero
-    private void saveMensajesToFile() {
+    private void saveMessagesToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
             for (Chat chat : chatMap.values()) {
-                writer.write(chat.getId() + ";" + chat.getNombre() + ";" + chat.getMensaje());
+                writer.write(chat.getId() + ";" + chat.getUsername() + ";" + chat.getMessage());
                 writer.newLine();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-        // ^Mirar si existe un fichero que lllama mensajes.txt, si existe, miro las líneas uqe tiene. y cargo las líneas en la aplicación. Esto sustituye la línea 29. 
-        // Cada vez que se anade un nuevo mensaje se vuelca en el fichero
-        // Cada vez que se elimina, se elimina la línea del fichero, actualización...
-        
-        @GetMapping
-        public Collection<Chat> obtenerMensajes() {
-            return chatMap.values();
+
+    @GetMapping("/")
+    public List<Chat> getMessages(Integer nMessages) {  // Devolverá los últimos "nMessages" mensajes
+        if (nMessages == null || nMessages <= 0) {
+            nMessages = 5; // 5 por defecto, por ejemplo
         }
-    
-        // Petición POST para añadir nuevo mensaaje
-        @PostMapping
-        @ResponseStatus(HttpStatus.CREATED)
-        public Chat añadirMensaje(@RequestBody Chat nuevoMensaje) {
-            long id;
-            if (chatMap.isEmpty()) {
-                id = 0;
-                nextId.set(id);
-            } else {
-                id = nextId.incrementAndGet();
-            }
-            nuevoMensaje.setID(id);
-            chatMap.put(nuevoMensaje.getId(), nuevoMensaje);
-                saveMensajesToFile();
-                return nuevoMensaje;
-            }
-    
-        
+        int size = chatMap.size();
+        // Ya que están ordenados por id no hace falta consultar su id para filtrarlos
+        return chatMap.values().stream().skip(Math.max(0, size - nMessages)).toList();
+    }
+
+    // Petición POST para añadir nuevo mensaaje
+    @PostMapping("/")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Chat addMessage(@RequestBody Chat nuevoMensaje) {
+        long id;
+        if (chatMap.isEmpty()) {
+            id = 0;
+            nextId.set(id);
+        } else {
+            id = nextId.incrementAndGet();
         }
-     
+        nuevoMensaje.setID(id);
+        chatMap.put(nuevoMensaje.getId(), nuevoMensaje);
+        saveMessagesToFile();
+        return nuevoMensaje;
+    }
+}

@@ -36,9 +36,7 @@ class ConnectionManagerScene extends Phaser.Scene {
     }
 
     handleConnectionLost() {
-        console.log("¿tengo que activar overlay?");
         if (!this.overlayActive) {
-        console.log("tengo que activar overlay");
         this.show('Connection to the server lost. Attempting to reconnect...');
         }
         //this.scene.getScenes(true).forEach(scene => {

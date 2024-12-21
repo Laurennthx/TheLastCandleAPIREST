@@ -1,43 +1,72 @@
-$(document).ready(function () {
-    const chatBox = $('#chat-box');
-    const messageInput = $('#message-input');
-    const sendBtn = $('#send-btn');
-    let lastTimestamp = 0; // Track the last fetched timestamp
+class ChatScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'ChatScene' });
 
-    // Base URL dynamically derived from the current browser location
-    const baseUrl = `${window.location.origin}/api/chat`;
+    }
 
-    // Fetch messages from the server
-    function fetchMessages() {
-        $.get(baseUrl, { since: lastTimestamp }, function (data) {
-            if (data.messages && data.messages.length > 0) {
-                data.messages.forEach(msg => {
-                    chatBox.append(`<div>${msg}</div>`);
+    preload() {
+        this.load.html('chat', 'chat.html');
+    }
+
+    // Recargar mensajes
+    fetchMessages(chatMessages) {
+        $.get("/api/chat/", { nMessages: this.nMessages }, function (data) {
+            if (data && data.length > 0) {
+                chatMessages.innerHTML = ""; 
+                data.forEach(msg => {
+                    const messageElement = document.createElement("div");
+                    messageElement.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`
+                    chatMessages.appendChild(messageElement); 
                 });
-                chatBox.scrollTop(chatBox.prop('scrollHeight')); // Scroll to the bottom
-                lastTimestamp = data.timestamp; // Update last timestamp
             }
         });
     }
 
-    // Send a new message to the server
-    function sendMessage() {
-        const message = messageInput.val().trim();
+    // Enviar un mensaje con nombre de usuario y mensaje
+    sendMessage() {
+        const message = this.chatInput.value.trim();
         if (!message) return;
 
-        $.post(baseUrl, { message: message }, function () {
-            messageInput.val(''); // Clear the input
-            fetchMessages(); // Fetch new messages
+        $.ajax({
+            url: "/api/chat/",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ 
+                username: window.GameData.currentUser,
+                message: message 
+            }), // Enviar como JSON
+            success: () => {
+                this.chatInput.value = "";
+                this.fetchMessages(this.chatMessages);
+            },
+            error: (xhr) => {
+                console.error("Error al enviar el mensaje:", xhr.responseText);
+            }
         });
     }
 
-    // Event listeners
-    sendBtn.on('click', sendMessage);
-    messageInput.on('keypress', function (e) {
-        if (e.key === 'Enter') sendMessage();
-    });
+    create() {
+        const chatElement = this.add.dom(this.cameras.main.width / 2, this.cameras.main.height / 2)
+            .createFromCache('chat');
 
-    // Fetch messages initially and poll every 2 seconds
-    fetchMessages();
-    setInterval(fetchMessages, 2000);
-});
+        this.chatMessages = chatElement.getChildByID('chat-messages');
+        this.chatInput = chatElement.getChildByID('chat-input');
+        this.sendBtn = chatElement.getChildByID('send-button');
+
+        this.nMessages = 6;
+
+        // Añadir los eventos
+        this.sendBtn.addEventListener('click', this.sendMessage.bind(this));
+        this.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendMessage();
+        });
+
+        // Recargar los mensajes cada segundo
+        this.time.addEvent({
+            delay: 1000,
+            callback: () => this.fetchMessages(this.chatMessages),
+            loop: true
+        });
+    }
+
+}

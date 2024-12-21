@@ -1,6 +1,16 @@
 # Obtener detalles de un usuario
 #GET http://localhost:8080/api/users/andre00
 
+POST http://localhost:8080/api/chat/
+Content-Type: application/json
+
+{
+  "username": "andre3",
+  "message": "holasda"
+}
+
+GET http://localhost:8080/api/chat/
+
 # # # Crear un nuevo usuario
 # POST http://localhost:8080/api/users/
 # Content-Type: application/json
