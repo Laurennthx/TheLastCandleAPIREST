@@ -34,6 +34,9 @@ class LoadingScene extends Phaser.Scene {
         this.load.image('background2', 'assets/House/fondo3pentagonosPeque2.png')
         this.load.image('background3', 'assets/House/fondo3pentagonosPeque3.png')
         this.load.image('background4', 'assets/House/fondo3pentagonosPeque4.png')
+
+        // muebles
+        this.load.image('bookshelf', 'assets/Decorations_hide/Bookshelf.png')
         
 
         // crucifix

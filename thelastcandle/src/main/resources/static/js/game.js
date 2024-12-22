@@ -13,9 +13,6 @@ class GameScene extends Phaser.Scene {
 
     // #region PRELOAD
     preload() {
-
-
-
         // Animación exorcista
         this.load.spritesheet('exorcistWalk', 'assets/Animations/Exorcista/Exorcista/spriteSheetExorcista.png', {
             frameWidth: 1100,  // Ancho de cada fotograma
@@ -46,8 +43,6 @@ class GameScene extends Phaser.Scene {
 
         // MUNDO
         const zoomCamara = 4
-        const height = this.scale.height
-        const width = this.scale.width
 
         // BOTÓN RETURN TO MENU
         // boton back
@@ -123,7 +118,7 @@ class GameScene extends Phaser.Scene {
         const collider35 = this.createCollider(1274, 10498, 170, 2286)
         const collider36 = this.createCollider(100, 10489, 1776, 193)
 
-        // COLLIDERS
+        // RITUALES
         this.grupoRituales = this.physics.add.group()
         const ritual1 = this.grupoRituales.create(512, 7843, 'block').setOrigin(0, 0).setImmovable(true)
         ritual1.displayWidth = 473
@@ -140,7 +135,6 @@ class GameScene extends Phaser.Scene {
         ritual3.displayHeight = 473
         ritual3.alpha = 0
 
-
         this.rituals = [ritual1, ritual2, ritual3]; // Lista de colliders de rituales
 
         // Aplicar setImmovable a todos los objetos en el grupo
@@ -150,7 +144,6 @@ class GameScene extends Phaser.Scene {
 
         //CONTENEDOR HABITACIONES
         this.roomsContainer = this.add.container(0.0);
-
         this.bedroom1 = this.add.rectangle(1001.5, 3870, 1495, 2390);
         this.bedroom2 = this.add.rectangle(2934, 2545.5, 2130, 1471);
         this.bedroom3 = this.add.rectangle(7056, 2539, 2566, 1496);
@@ -176,20 +169,28 @@ class GameScene extends Phaser.Scene {
         this.escalaBg = this.scale.height / alturaBg
         this.roomsContainer.setScale(this.escalaBg);
 
-        
-        
         // Poner los interruptores
         this.interruptoresOn = this.physics.add.group(); // Grupo para los interruptores
         this.interruptoresOff = this.physics.add.group(); // Grupo para los interruptores
         this.ponerInterruptores(posInterruptores)
 
+        // MUEBLES
+        this.muebles = [];  // Almacenar en un array. Si es en un container no funciona el depth
+        const bookshelf = this.add.image(5000, 6000, 'bookshelf').setOrigin(0, 0).setScale(3)   // La escala la he puesto a ojo
+
+        // Ajustar la posición y profundidad de cada objeto
+        this.muebles.push(bookshelf)
+        this.muebles.forEach((mueble) => {
+            mueble.setScale(this.escalaBg * mueble.scaleX)
+            mueble.setPosition(mueble.x * this.escalaBg, mueble.y * this.escalaBg)
+            mueble.depth = mueble.y + mueble.displayHeight / 2
+        });
+
         this.bgContainer.add([background, this.crucifix, ...this.walls.getChildren(), ...this.interruptoresOn.getChildren(), ...this.interruptoresOff.getChildren(), ...this.grupoRituales.getChildren()])
         this.bgContainer.setScale(this.escalaBg)
         background.setScale(alturaBg / background.height)
         
-
-        // Establecer los límites del mundo según el tamaño del mapa
-        //this.physics.world.setBounds(0, 0, anchuraBg * this.escalaBg, height);
+        
         // #endregion
 
         // #region GENERACION VELAS
@@ -198,8 +199,6 @@ class GameScene extends Phaser.Scene {
         this.generateCandles(5); // Generar 5 velas
 
         // #region PERSONAJES 
-        // Contenedor de personajes
-        this.charactersContainer = this.add.container(0, 0)
 
         // EXORCISTA ANIMACIÓN
         // Crear la animación de caminar
@@ -230,8 +229,6 @@ class GameScene extends Phaser.Scene {
         this.demon.setScale(0.035); // Ajusta el tamaño según tus necesidades
 
 
-        // Añadimos los personajes al contenedor
-        this.charactersContainer.add([this.exorcist, this.demon])
         // #endregion
 
         // #region OBJETOS
@@ -357,8 +354,15 @@ class GameScene extends Phaser.Scene {
         this.visionAreaDe = this.add.image(this.demon.x, this.demon.y, 'gradiente').setOrigin(0.5, 0.5)
         this.visionAreaDe.setScale(visionInicialDemon, visionInicialDemon)
 
+        // Hacer que el gradiente esté por encima del resto de todas las cosas
+        this.visionAreaEx.depth = 2000
+        this.visionAreaDe.depth = 2000
+
         // Indicar a qué objetos les afecta la luz
         background.setPipeline('Light2D')
+        this.muebles.forEach((mueble) => {
+            mueble.setPipeline('Light2D')
+        });
 
         // Arrays de luces que se encienden encima de los interruptores para indicar que pueden ser pulsados
         this.lucesEx = this.ponerLuces(posInterruptores, 0xb8afd0)  // Las luces indicadores del ex. son blancas
@@ -428,7 +432,7 @@ class GameScene extends Phaser.Scene {
             this.cameras.main.ignore(luzDe)
         })
         // La tercera cámara debe ignorar todos los sprites XD
-        this.marcoCamera.ignore([this.charactersContainer, this.bgContainer, this.candles, this.visionAreaEx, this.visionAreaDe, background])
+        this.marcoCamera.ignore([...this.muebles, this.exorcist, this.demon, this.bgContainer, this.candles, this.visionAreaEx, this.visionAreaDe, background])
 
         // #endregion
 
@@ -441,11 +445,9 @@ class GameScene extends Phaser.Scene {
 
         // #region MENU DE PAUSA
         // Fondo del menú de pausa
-        // Fondo del menú de pausa
 
         // Efecto de fade
         //this.add.image(400, 300, "fade").setAlpha(1); // Transparencia ajustada con setAlpha
-
 
         const menuPausaBG = this.add.image(960, 540, "menuPausaBG"); // Coordenadas y clave de la imagen
         menuPausaBG.setScale(0.85);
@@ -1021,6 +1023,10 @@ class GameScene extends Phaser.Scene {
                 if (this.lastKeyExorcist == i) break
             }
         }
+
+        // Actualizar la profundidad de los personajes
+        this.exorcist.depth = this.exorcist.y - 10
+        this.demon.depth = this.demon.y 
 
         this.visionAreaEx.setPosition(this.exorcist.x, this.exorcist.y)
         this.visionAreaDe.setPosition(this.demon.x, this.demon.y)
