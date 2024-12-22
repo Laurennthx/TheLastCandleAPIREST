@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Enlace para cargar la fuente desde Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Estilos generales del chat */
+        body {
+            font-family: 'IBM Plex Mono', monospace; /* Fuente global */
+        }
+
         #chat-messages {
             height: 300px;
             border: 1px solid #ccc;
@@ -12,6 +18,7 @@
             background: rgba(0, 0, 0, 0.1); /* Fondo semitransparente */
             font-size: 18px; /* Tamaño de texto más grande */
             color: #3b2411; /* Texto blanco */
+            font-family: 'IBM Plex Mono', monospace; /* Fuente del área de mensajes */
         }
 
         #chat-input {
@@ -21,6 +28,7 @@
             font-size: 18px; /* Tamaño de texto más grande */
             border: 2px solid #420404;
             border-radius: 5px;
+            font-family: 'IBM Plex Mono', monospace; /* Fuente del input */
         }
 
         #send-button {
@@ -31,6 +39,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace; /* Fuente del botón */
         }
 
         #send-button:hover {

@@ -134,10 +134,10 @@ class MenuScene extends Phaser.Scene {
     showConnectedUsers(users) {
         if (users.length > 0) {
             const usersText = users.join('\n');  // Unir los usuarios en una cadena
-            this.userList = this.add.text(800, 300, usersText, {
+            this.userList = this.add.text(880, 300, usersText, {
                 fontSize: '45px',
                 fill: '#000',
-                fontFamily: 'Arial'
+                fontFamily: 'IBM Plex Mono'
             });
             this.userList.setOrigin(0.5);
         }
