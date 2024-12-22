@@ -2,6 +2,9 @@ class MenuScene extends Phaser.Scene {
     constructor(){
         super({key: 'MenuScene'});
         this.userList = "";
+        // #region var activas
+        this.isChatActive = false;
+        this.chatInitialized = false;
     }
 
     preload(){
@@ -16,6 +19,10 @@ class MenuScene extends Phaser.Scene {
         this.load.image("chatBG", 'assets/UI/chat/chatBG.png');
         this.load.image("chatFade", 'assets/UI/chat/chatFade.png');
         this.load.image("onlineBG", 'assets/UI/chat/online.png');
+
+        this.load.image("chattyIcon", 'assets/UI/chattyIcon.png');
+        this.load.html('chat', 'chat.html'); // Carga el HTML del chat
+
     }
 
 
@@ -23,6 +30,8 @@ class MenuScene extends Phaser.Scene {
 
         // Estado inicial del chat desactivado
         this.isChatActive = false;
+
+
 
         // inmagen de fondo
         const backgroundMenu = this.add.image(0,0, "menuBG").setOrigin(0,0);
@@ -50,6 +59,23 @@ class MenuScene extends Phaser.Scene {
             this.scene.start("OptionsScene");   
         });  
         options_button.setScale(0.5,0.5);
+
+        // #region Chat2
+        // chatty icon
+        const chattyIcon = this.add.image(1830, 150, "chattyIcon")
+        .setInteractive()
+        .on('pointerdown', () => {
+            this.sound.play("select");
+            this.toggleChatVisibility(); // Llama a la nueva función renombrada
+        })
+        .on('pointerover', () => {
+            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+        });
+        chattyIcon.setScale(0.3);
+
+        //#region contenedor
+        // Contenedor del chat
+        this.chatContainer = this.add.container(1480, 540).setVisible(false);
 
         // boton credits
         const credits_button = this.add.image(350, 690, "bCredits")
@@ -162,6 +188,28 @@ class MenuScene extends Phaser.Scene {
 
         // Opcional: Imprimir en consola si el chat está activo o no
         console.log(this.isChatActive ? "Chat activado" : "Chat desactivado");
+    }
+    
+    toggleChatVisibility() {
+        if (this.isChatActive) {
+            // Si el chat ya está activo, lo desactivamos y ocultamos el contenedor
+            this.isChatActive = false;
+            this.chatContainer.setVisible(false);  // Ocultar el contenedor
+            console.log("Chat desactivado");
+        } else {
+            // Si el chat no está activo, lo activamos y mostramos el contenedor
+            this.isChatActive = true;
+            this.chatContainer.setVisible(true);  // Mostrar el contenedor
+
+            if (!this.chatInitialized) {
+                // Obtener la instancia de ChatScene y inicializar el chat
+                this.chatScene = this.scene.get('ChatScene');
+                this.chatScene.initChat(this.chatContainer);
+                this.chatInitialized = true;
+                console.log("Chat activado");
+
+            }
+        }
     }
 
 
