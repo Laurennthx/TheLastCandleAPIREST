@@ -2,7 +2,6 @@ class MenuScene extends Phaser.Scene {
     constructor(){
         super({key: 'MenuScene'});
         this.userList = "";
-        // #region var activas
         this.isChatActive = false;
         this.chatInitialized = false;
     }
@@ -60,7 +59,7 @@ class MenuScene extends Phaser.Scene {
         });  
         options_button.setScale(0.5,0.5);
 
-        // #region Chat2
+        // chatty icon
         // chatty icon
         const chattyIcon = this.add.image(1830, 150, "chattyIcon")
         .setInteractive()
@@ -73,9 +72,8 @@ class MenuScene extends Phaser.Scene {
         });
         chattyIcon.setScale(0.3);
 
-        //#region contenedor
-        // Contenedor del chat
-        this.chatContainer = this.add.container(1480, 540).setVisible(false);
+            // Contenedor del chat
+            this.chatContainer = this.add.container(1480, 540).setVisible(false);
 
         // boton credits
         const credits_button = this.add.image(350, 690, "bCredits")
@@ -190,6 +188,7 @@ class MenuScene extends Phaser.Scene {
         console.log(this.isChatActive ? "Chat activado" : "Chat desactivado");
     }
     
+// Nueva función renombrada
     toggleChatVisibility() {
         if (this.isChatActive) {
             // Si el chat ya está activo, lo desactivamos y ocultamos el contenedor
@@ -206,12 +205,9 @@ class MenuScene extends Phaser.Scene {
                 this.chatScene = this.scene.get('ChatScene');
                 this.chatScene.initChat(this.chatContainer);
                 this.chatInitialized = true;
-                console.log("Chat activado");
-
             }
         }
     }
-
 
     update(){}
 

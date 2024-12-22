@@ -1,12 +1,34 @@
 class ChatScene extends Phaser.Scene {
     constructor() {
         super({ key: 'ChatScene' });
-
     }
 
     preload() {
         this.load.html('chat', 'chat.html');
     }
+
+    initChat(parent) {
+        const chatElement = this.add.dom(0, 0).createFromCache('chat');
+        parent.add(chatElement);
+
+        this.chatMessages = chatElement.getChildByID('chat-messages');
+        this.chatInput = chatElement.getChildByID('chat-input');
+        this.sendBtn = chatElement.getChildByID('send-button');
+
+        this.nMessages = 6;
+
+        this.sendBtn.addEventListener('click', this.sendMessage.bind(this));
+        this.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendMessage();
+        });
+
+        this.time.addEvent({
+            delay: 1000,
+            callback: () => this.fetchMessages(this.chatMessages),
+            loop: true,
+        });
+    }
+
 
     // Recargar mensajes
     fetchMessages(chatMessages) {
