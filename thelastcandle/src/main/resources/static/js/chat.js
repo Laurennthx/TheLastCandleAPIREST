@@ -7,26 +7,9 @@ class ChatScene extends Phaser.Scene {
         this.load.html('chat', 'chat.html');
     }
 
-    initChat(parent) {
-        const chatElement = this.add.dom(0, 0).createFromCache('chat');
-        parent.add(chatElement);
-
-        this.chatMessages = chatElement.getChildByID('chat-messages');
-        this.chatInput = chatElement.getChildByID('chat-input');
-        this.sendBtn = chatElement.getChildByID('send-button');
-
-        this.nMessages = 6;
-
-        this.sendBtn.addEventListener('click', this.sendMessage.bind(this));
-        this.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.sendMessage();
-        });
-
-        this.time.addEvent({
-            delay: 1000,
-            callback: () => this.fetchMessages(this.chatMessages),
-            loop: true,
-        });
+    // Útil para cambiar la posición del chat desde otra escena
+    changePos(x, y) {
+        this.chatElement.setPosition(x, y)
     }
 
 
@@ -68,12 +51,12 @@ class ChatScene extends Phaser.Scene {
     }
 
     create() {
-        const chatElement = this.add.dom(this.cameras.main.width / 2, this.cameras.main.height / 2)
-            .createFromCache('chat');
+        const { posX, posY } = this.scene.settings.data;
 
-        this.chatMessages = chatElement.getChildByID('chat-messages');
-        this.chatInput = chatElement.getChildByID('chat-input');
-        this.sendBtn = chatElement.getChildByID('send-button');
+        this.chatElement = this.add.dom(0, 0).createFromCache('chat');
+        this.chatMessages = this.chatElement.getChildByID('chat-messages');
+        this.chatInput = this.chatElement.getChildByID('chat-input');
+        this.sendBtn = this.chatElement.getChildByID('send-button');
 
         this.nMessages = 6;
 
@@ -89,6 +72,8 @@ class ChatScene extends Phaser.Scene {
             callback: () => this.fetchMessages(this.chatMessages),
             loop: true
         });
+
+        this.changePos(posX, posY)
     }
 
 }
