@@ -65,7 +65,7 @@ class ChatScene extends Phaser.Scene {
         this.chatInput = this.chatElement.getChildByID('chat-input');
         this.sendBtn = this.chatElement.getChildByID('send-button');
 
-        this.nMessages = 6;
+        this.nMessages = 20;
 
         // Añadir los eventos
         this.sendBtn.addEventListener('click', this.sendMessage.bind(this));
