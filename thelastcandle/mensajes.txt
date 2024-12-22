@@ -1,8 +1,31 @@
-0;andre;Hola
-1;juan;hello
-2;andre;Hol de nuevo
-3;juan;va bien
-4;asdas;Ahora
-5;juan;ya lo cerre y lo abri
-6;asdas;Perefecto
-7;juan;guay
+0;dfsd;hola
+1;dfsd;que tal
+2;dfsd;que te ocurre
+3;dfds;ddd
+4;fvdfv;hola
+5;ffsgsd;Holaaa
+6;dfs;ffd
+7;fvdfvfvd;Hola
+8;fdfdf;Hola
+9;fdfdf;miau
+10;fdfdf;kmlfkv
+11;fdfdf;dkmkds
+12;fdfdf;dfd
+13;rger;hola
+14;rferre;hola
+15;refqr;rer
+16;Lauraaaa;hola
+17;Lauraaaa;miauuuu
+18;Lauraaaa;mimiimii
+19;Laura;Holiii
+20;Laura;Holaaa
+21;dfdssdf;Miau
+22;dfdssdf;Holaaa
+23;eadsa;dfsd
+24;eadsa;sas
+25;eadsa;ssss
+26;sdfsd;Hola
+27;sdfsd;Que tal
+28;dfds;Holaa
+29;xbdgf;Queee
+30;xbdgf;ds

@@ -5,6 +5,9 @@ class ChatScene extends Phaser.Scene {
 
     preload() {
         this.load.html('chat', 'chat.html');
+        this.soundSend = new Audio('assets/Music/chat effect/sent.mp3'); // Ruta al sonido
+        this.soundReceive = new Audio('assets/Music/chat effect/receivedd.mp3'); // Ruta al sonido
+
     }
 
     // Útil para cambiar la posición del chat desde otra escena
@@ -31,6 +34,10 @@ class ChatScene extends Phaser.Scene {
     sendMessage() {
         const message = this.chatInput.value.trim();
         if (!message) return;
+
+        // reproducir sonido
+        this.soundSend.play();
+
 
         $.ajax({
             url: "/api/chat/",
