@@ -165,10 +165,15 @@ class MenuScene extends Phaser.Scene {
 
             if (!this.chatInitialized) {
                 this.chatInitialized = true;
-                this.initChat()
+                // Obtener la instancia de ChatScene y inicializar el chat
+                this.chatScene = this.scene.get('ChatScene');
+                this.scene.launch("ChatScene", { posX: this.chatX, posY: this.chatY })   // Pasar su posición inicial
             }
             else {
-                this.wakeChat()
+                this.scene.wake("ChatScene")    // Si está dormida se pausa su update y deja de enviar peticiones GET
+                // Una vez ya ha sido iniciada con launch, 
+                // se puede cambiar la posición del chat de esta manera
+                //this.chatScene.changePos(100, 100)  
             }
 
         } else {
@@ -178,21 +183,8 @@ class MenuScene extends Phaser.Scene {
         }
     }
 
-    initChat() {
-        // Obtener la instancia de ChatScene y inicializar el chat
-        this.chatScene = this.scene.get('ChatScene');
-        this.scene.launch("ChatScene", { posX: this.chatX, posY: this.chatY })   // Pasar su posición inicial
-    }
-
     sleepChat() {
         this.scene.sleep("ChatScene");  // Ponemos la escena del chat a dormir
-    }
-
-    wakeChat() {
-        this.scene.wake("ChatScene")    // Si está dormida se pausa su update y deja de enviar peticiones GET
-        // Una vez ya ha sido iniciada con launch, 
-        // se puede cambiar la posición del chat de esta manera
-        //this.chatScene.changePos(100, 100)  
     }
 
     update() { }

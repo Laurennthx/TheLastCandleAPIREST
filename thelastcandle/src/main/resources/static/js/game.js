@@ -34,6 +34,13 @@ class GameScene extends Phaser.Scene {
         this.load.image("resumeB", "assets/UI/MenuPausa/resumeB.png");
         this.load.image("pauseB", "assets/UI/MenuPausa/pauseB.png");
 
+        // chat
+        this.load.image("chatB", 'assets/UI/chat/chatB.png');
+        this.load.image("chatBG", 'assets/UI/chat/chatBG.png');
+        this.load.image("chatFade", 'assets/UI/chat/chatFade.png');
+        this.load.image("onlineBG", 'assets/UI/chat/online.png');
+        this.load.html('chat', 'chat.html'); // Carga el HTML del chat
+
     }
 
     // #region CREATE
@@ -160,7 +167,7 @@ class GameScene extends Phaser.Scene {
 
         this.roomsContainer.add([this.bedroom1, this.bedroom2, this.bedroom3, this.bathroom1, this.bathroom2, this.kitchen, this.diningRoom,
         this.storageRoom, this.livingRoom, this.hall, this.corridor1, this.corridor2, this.hall2]);
-        
+
         // Obtener la textura de la imagen
         const textura = this.textures.get('background');
         // Acceder a las dimensiones de la textura para escalar todo en base a las coordenadas de la imagen grande original
@@ -189,8 +196,8 @@ class GameScene extends Phaser.Scene {
         this.bgContainer.add([background, this.crucifix, ...this.walls.getChildren(), ...this.interruptoresOn.getChildren(), ...this.interruptoresOff.getChildren(), ...this.grupoRituales.getChildren()])
         this.bgContainer.setScale(this.escalaBg)
         background.setScale(alturaBg / background.height)
-        
-        
+
+
         // #endregion
 
         // #region GENERACION VELAS
@@ -262,6 +269,7 @@ class GameScene extends Phaser.Scene {
             if (this.killDemon.visible) { // Solo si el botón es visible
                 this.sound.play("select");
                 this.scene.stop("gameScene");
+                this.scene.sleep("ChatScene");
                 this.scene.start("ExorcistWinsScene");
             }
         });
@@ -281,6 +289,7 @@ class GameScene extends Phaser.Scene {
             if (this.killExorcist.visible) { // Solo si el botón es visible
                 this.sound.play("select");
                 this.scene.stop("gameScene");
+                this.scene.sleep("ChatScene");
                 this.scene.start("EndScene");
                 this.ritualCount = 0; // Reinicia el contador de rituales
                 this.candleCount = 0; // Reinicia el contador de velas
@@ -447,31 +456,31 @@ class GameScene extends Phaser.Scene {
         // Fondo del menú de pausa
 
         // Efecto de fade
-        //this.add.image(400, 300, "fade").setAlpha(1); // Transparencia ajustada con setAlpha
+        const fade = this.add.image(960, 540, "chatFade").setVisible(false).setScale(1);
 
         const menuPausaBG = this.add.image(960, 540, "menuPausaBG"); // Coordenadas y clave de la imagen
         menuPausaBG.setScale(0.85);
         menuPausaBG.setVisible(false);
-        
+
         // Botón de pausa (visible en el HUD del juego)
-        let pauseButton = this.add.image(1830, 60, "pauseB").setInteractive();
-        pauseButton.on("pointerdown", () => {
+        this.pauseButton = this.add.image(1830, 60, "pauseB").setInteractive();
+        this.pauseButton.on("pointerdown", () => {
             this.sound.play("select");
             console.log("Juego en pausa");
-            // Lógica para mostrar el menú de pausa
+            this.togglePauseMenu(pauseMenuElements)
         }).on('pointerover', () => {
             this.sound.play("hover"); // Reproduce sonido al pasar el cursor 
         });
-        pauseButton.setScale(0.2);
+        this.pauseButton.setScale(0.2);
 
         // Botón de menú principal
         let menuButton = this.add.image(680, 520, "menuB").setInteractive();
-        menuButton .on('pointerdown', () => {
+        menuButton.on('pointerdown', () => {
             this.sound.play("select");
             this.scene.stop("GameScene");
-            this.scene.start("MenuScene"); 
+            this.scene.start("MenuScene");
             this.ritualCount = 0;
-            this.candleCount = 0;  
+            this.candleCount = 0;
         }).on('pointerover', () => {
             this.sound.play("hover"); // Reproduce sonido al pasar el cursor  
         });
@@ -480,15 +489,15 @@ class GameScene extends Phaser.Scene {
 
         // Botón de nuevo juego
         let newGameButton = this.add.image(680, 620, "newGameB").setInteractive();
-        newGameButton .on('pointerdown', () => {
+        newGameButton.on('pointerdown', () => {
             this.sound.play("select");
             this.scene.stop("GameScene");
-            this.scene.start("GameModeScene"); 
+            this.scene.start("GameModeScene");
             this.ritualCount = 0;
-            this.candleCount = 0;  
+            this.candleCount = 0;
         }).on('pointerover', () => {
             this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-        });  
+        });
         newGameButton.setScale(0.4);
         newGameButton.setVisible(false);
 
@@ -496,9 +505,8 @@ class GameScene extends Phaser.Scene {
         // Botón de reanudar juego
         let resumeButton = this.add.image(680, 720, "resumeB").setInteractive();
         resumeButton.on("pointerdown", () => {
-            console.log("Reanudar juego");
             // Lógica para cerrar el menú de pausa y continuar
-            this.togglePauseMenu(pauseButton, pauseMenuElements);
+            this.togglePauseMenu(pauseMenuElements);
 
         });
         resumeButton.setScale(0.42);
@@ -509,11 +517,11 @@ class GameScene extends Phaser.Scene {
         let offButton = this.add.image(1150, 520, "offBPausa").setInteractive();
         offButton.on('pointerdown', () => {
             this.sound.play("select");
-            this.bgMusic.stop();  
+            this.bgMusic.stop();
         })
-        .on('pointerover', () => {
-            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-        });  
+            .on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            });
         offButton.setScale(0.4);
         offButton.setVisible(false);
 
@@ -522,31 +530,53 @@ class GameScene extends Phaser.Scene {
         let onButton = this.add.image(1150, 620, "onBPausa").setInteractive();
         onButton.on('pointerdown', () => {
             this.sound.play("select");
-            this.bgMusic.play();  
+            this.bgMusic.play();
         })
-        .on('pointerover', () => {
-            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-        });  
+            .on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            });
         onButton.setScale(0.4);
         onButton.setVisible(false);
 
 
         // Array con los elementos del menú de pausa
-        const pauseMenuElements = [menuPausaBG, menuButton, newGameButton, resumeButton, offButton, onButton];
+        const pauseMenuElements = [menuPausaBG, menuButton, newGameButton, resumeButton, offButton, onButton, fade];
 
-        // Evento del botón de pausa
-        pauseButton.on("pointerdown", () => {
-            this.togglePauseMenu(pauseButton, pauseMenuElements);
-        });
 
-        scndCamera.ignore([this.visionAreaEx, divider, this.killDemon, this.killExorcist, ...pauseMenuElements])
-        this.cameras.main.ignore([this.visionAreaDe, divider, this.killDemon, this.killExorcist, ...pauseMenuElements ])
+        // #region CHAT
+        // IMPORTANTE: Quitar de cara a la FASE 5. Lo mismo que sus métodos!!!
+        this.userList = "";
+        this.isChatActive = false;
+        this.chatInitialized = false;
 
+        // Estado inicial del chat desactivado
+        this.isChatActive = false;
+
+        this.chatX = 1280
+        this.chatY = 540
+
+        // Elementos del chat
+        const BGChat = this.add.image(1280, 540, "chatBG").setVisible(false).setScale(0.6);
+        const onlineBG = this.add.image(690, 340, "onlineBG").setVisible(false).setScale(0.6);
+
+        // Botón del chat
+        this.chatB = this.add.image(1730, 60, "chatB")
+            .setInteractive()
+            .on('pointerdown', () => {
+                this.sound.play("select");
+                this.toggleChatMenu([fade, BGChat, onlineBG]);
+            })
+            .on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            }).setScale(0.3);
+
+        scndCamera.ignore([this.visionAreaEx, divider, this.killDemon, this.killExorcist, ...pauseMenuElements, BGChat, onlineBG])
+        this.cameras.main.ignore([this.visionAreaDe, divider, this.killDemon, this.killExorcist, ...pauseMenuElements, BGChat, onlineBG])
 
     }
 
     // Método para alternar la visibilidad del menú de pausa
-    togglePauseMenu(pauseButton, elements) {
+    togglePauseMenu(elements) {
         // Verifica si el primer elemento está visible
         const isVisible = elements[0].visible;
 
@@ -555,18 +585,119 @@ class GameScene extends Phaser.Scene {
             element.setVisible(!isVisible);
         });
 
-        // Opcional: Imprimir en consola si se activó o desactivó el menú
-        console.log(isVisible ? "Menú oculto" : "Menú mostrado");
-
         this.isPaused = !isVisible;
-        if(!isVisible){
+        if (this.isPaused) {
             this.resetKeys()
             this.demon.anims.stop('demonWalk'); // parar animación
             this.exorcist.anims.stop('walk'); // parar animación
-        } 
-
+            // Desactivar el botón del chat
+            this.chatB.depth = -1   // Hacer que se vea oscuro porque tien el fade delante
+            this.chatB.removeInteractive()
+        }
+        else{
+            this.chatB.depth = 1
+            this.chatB.setInteractive()
+        }
     }
 
+    // #region MÉTODO CHAT
+
+    // Método para obtener los usuarios conectados
+    async getConnectedUsers() {
+        try {
+            const response = await fetch('/api/connected-users', { //llamada a la API
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Username': window.GameData.currentUser // Enviar el nombre del usuario en el encabezado
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Failed to retrieve users.');
+            }
+
+            const data = await response.json();  // Se asume que la respuesta es un JSON
+
+            // Mostrar los usuarios conectados en el chat (por ejemplo)
+            this.showConnectedUsers(data);
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    // Método para mostrar los usuarios conectados
+    showConnectedUsers(users) {
+        if (users.length > 0) {
+            const usersText = users.join('\n');  // Unir los usuarios en una cadena
+            this.userList = this.add.text(680, 300, usersText, {
+                fontSize: '45px',
+                fill: '#000',
+                fontFamily: 'IBM Plex Mono'
+            });
+            this.userList.setOrigin(0.5);
+        }
+    }
+
+    // Método para alternar la visibilidad de la UI del chat
+    toggleChatMenu(elements) {
+        // Verifica si el primer elemento está visible
+        const isVisible = elements[0].visible;
+
+        // Alterna la visibilidad de cada elemento
+        elements.forEach(element => {
+            element.setVisible(!isVisible);
+        });
+
+        // Alterna el estado del chat
+        this.isChatActive = !isVisible;
+
+        if (this.isChatActive) {
+            // Pausar los controles
+            this.isPaused = this.isChatActive;
+            this.resetKeys()
+            this.demon.anims.stop('demonWalk'); // parar animación
+            this.exorcist.anims.stop('walk'); // parar animación
+
+            // Si el chat está activado, obtener los usuarios conectados
+            this.getConnectedUsers();
+            // Si el chat no está activo, lo activamos
+            this.isChatActive = true;
+            // Desactivar el botón de pausa
+            this.pauseButton.removeInteractive();
+            this.pauseButton.depth = -1
+
+            if (!this.chatInitialized) {
+                this.chatInitialized = true;
+                // Obtener la instancia de ChatScene e inicializar el chat
+                this.chatScene = this.scene.get('ChatScene');
+                this.scene.launch("ChatScene", { posX: this.chatX, posY: this.chatY })   // Pasar su posición inicial
+            }
+            else {
+                this.scene.wake("ChatScene")    // Si está dormida se pausa su update y deja de enviar peticiones GET
+                // Una vez ya ha sido iniciada con launch, 
+                // se puede cambiar la posición del chat de esta manera
+                //this.chatScene.changePos(100, 100)  
+            }
+
+        } else {
+            // Si el chat se desactiva, ocultar los usuarios conectados
+            this.userList.destroy();
+            this.sleepChat()
+            // Activar los controles
+            this.isPaused = this.isChatActive;
+            this.pauseButton.depth = 1
+            // Activar el botón de pausa
+            this.pauseButton.setInteractive()
+        }
+    }
+
+    sleepChat() {
+        this.scene.sleep("ChatScene");  // Ponemos la escena del chat a dormir
+    }
+
+    // #endregion
+
+    // #region OTROS
 
     // MÉTODO CREACIÓN DE COLLIDERS
     createCollider(x, y, width, height) {
@@ -577,8 +708,6 @@ class GameScene extends Phaser.Scene {
         return collider
     }
 
-
-    // #region METODOS CRUCIFIJO
     generateCrucifix() {
         const texturaCrucifix = this.textures.get('crucifix');
         let escalaCrucifijo = 0.5
@@ -595,7 +724,6 @@ class GameScene extends Phaser.Scene {
 
         this.crucifix.setPosition(x, y)
         this.aura.setPosition((x + anchuraCrucifix / 2) * this.escalaBg, (y + alturaCrucifix / 2) * this.escalaBg)
-        console.log(this.aura.x, this.aura.y)
         this.aura.setRadius(60).setIntensity(10)
 
         console.log("Crucifijo generado")
@@ -957,11 +1085,11 @@ class GameScene extends Phaser.Scene {
         });
     }
 
-    resetKeys(){
-        for(let i = 0; i < this.keysPressedEx.length; i++){
+    resetKeys() {
+        for (let i = 0; i < this.keysPressedEx.length; i++) {
             this.keysPressedEx[i][1] = false;
         }
-        for(let i = 0; i < this.keysPressedDe.length; i++){
+        for (let i = 0; i < this.keysPressedDe.length; i++) {
             this.keysPressedDe[i][1] = false;
         }
     }
@@ -1026,7 +1154,7 @@ class GameScene extends Phaser.Scene {
 
         // Actualizar la profundidad de los personajes
         this.exorcist.depth = this.exorcist.y - 10
-        this.demon.depth = this.demon.y 
+        this.demon.depth = this.demon.y
 
         this.visionAreaEx.setPosition(this.exorcist.x, this.exorcist.y)
         this.visionAreaDe.setPosition(this.demon.x, this.demon.y)
