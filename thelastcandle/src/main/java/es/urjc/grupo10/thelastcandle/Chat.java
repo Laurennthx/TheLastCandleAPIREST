@@ -1,20 +1,21 @@
 package es.urjc.grupo10.thelastcandle;
 public class Chat {
 
-    private long id;
+    private int id;
     private String username;
     private String message;
 
-public Chat(long id, String nombre, String message){
+public Chat(int id, String nombre, String message){
+    this.id = id;
     this.username= nombre;
     this.message= message;
 
 }
 
-public long getId(){
+public int getId(){
 return id;
 }
-public void setID(long id){
+public void setID(int id){
     this.id=id;
 }
 

@@ -9,8 +9,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,8 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChatController {
 
     // HashMap para almacenar el chat del juego
-    Map<Long, Chat> chatMap = new ConcurrentHashMap<>();
-    AtomicLong nextId = new AtomicLong(0);
+    Map<Integer, Chat> chatMap = new ConcurrentHashMap<>();
+    AtomicInteger nextId = new AtomicInteger(0);
     private static final String FILE_NAME = "mensajes.txt";
     int nMessages = 20; // Número de mensajes a obtener en cada
 
@@ -36,22 +35,23 @@ public class ChatController {
     // Método para cargar mensajes desde el fichero en el ConcurrentHashMap al
     // iniciar el juego
     private void loadMessagesFromFile() {
+        System.out.println("entrada");
         try {
             File file = new File(FILE_NAME);
             if (file.exists()) {
                 List<String> lines = Files.readAllLines(Paths.get(FILE_NAME));
-                long maxId = 0;
+                int maxId = 0;
                 System.out.println("File found, reading players...");
                 for (String line : lines) {
                     System.out.println("Processing line: " + line);
                     String[] parts = line.split(";", 3);
                     if (parts.length == 3) {
                         try {
-                            long id = Long.parseLong(parts[0]);
+                            int id = Integer.parseInt(parts[0]);
                             String name = parts[1];
                             String message = parts[2];
                             chatMap.put(id, new Chat(id, name, message));
-                            System.out.println("Chat loaded: ID=" + id + ", Name=" + name + ", Mensaje=" + message);
+                            System.out.println("Line loaded!");
                             if (id > maxId) {
                                 maxId = id;
                             }
@@ -63,7 +63,6 @@ public class ChatController {
                 nextId.set(maxId);
             } else {
                 Files.createFile(Paths.get(FILE_NAME));
-
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,7 +92,7 @@ public class ChatController {
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     public Chat addMessage(@RequestBody Chat nuevoMensaje) {
-        long id;
+        int id;
         if (chatMap.isEmpty()) {
             id = 0;
             nextId.set(id);
