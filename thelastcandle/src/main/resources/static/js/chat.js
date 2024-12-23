@@ -18,7 +18,7 @@ class ChatScene extends Phaser.Scene {
 
     // Recargar mensajes
     fetchMessages(chatMessages) {
-        $.get("/api/chat/", { nMessages: this.nMessages }, function (data) {
+        $.get("/api/chat/", function (data) {
             if (data && data.length > 0) {
                 chatMessages.innerHTML = ""; 
                 data.forEach(msg => {
@@ -64,8 +64,6 @@ class ChatScene extends Phaser.Scene {
         this.chatMessages = this.chatElement.getChildByID('chat-messages');
         this.chatInput = this.chatElement.getChildByID('chat-input');
         this.sendBtn = this.chatElement.getChildByID('send-button');
-
-        this.nMessages = 20;
 
         // Añadir los eventos
         this.sendBtn.addEventListener('click', this.sendMessage.bind(this));

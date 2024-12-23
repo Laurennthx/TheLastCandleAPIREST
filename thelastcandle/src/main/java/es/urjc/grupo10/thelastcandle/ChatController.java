@@ -27,6 +27,7 @@ public class ChatController {
     Map<Long, Chat> chatMap = new ConcurrentHashMap<>();
     AtomicLong nextId = new AtomicLong(0);
     private static final String FILE_NAME = "mensajes.txt";
+    int nMessages = 20; // Número de mensajes a obtener en cada
 
     public ChatController() {
         loadMessagesFromFile();
@@ -82,10 +83,7 @@ public class ChatController {
     }
 
     @GetMapping("/")
-    public List<Chat> getMessages(Integer nMessages) {  // Devolverá los últimos "nMessages" mensajes
-        if (nMessages == null || nMessages <= 0) {
-            nMessages = 5; // 5 por defecto, por ejemplo
-        }
+    public List<Chat> getMessages() { 
         int size = chatMap.size();
         // Ya que están ordenados por id no hace falta consultar su id para filtrarlos
         return chatMap.values().stream().skip(Math.max(0, size - nMessages)).toList();
