@@ -51,22 +51,12 @@ class GameScene extends Phaser.Scene {
         // MUNDO
         const zoomCamara = 4
 
-        // BOTÓN RETURN TO MENU
-        // boton back
-        /*const returnButton = this.add.image(1810, 40, "return")
-            .setInteractive()
-            .on('pointerdown', () => {
-                this.sound.play("select");
-                this.scene.stop("GameScene");
-                this.scene.start("MenuScene");
-                this.ritualCount = 0;
-                this.candleCount = 0;
-            })
-            .on('pointerover', () => {
-                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-            });
-        returnButton.setScale(0.28, 0.28);
-        */
+        this.bgContainer = this.add.container(0, 0)
+        // Crear el mapa como fondo, dimensiones: 9962 x 15522
+        const background = this.add.image(0, 0, 'background4').setOrigin(0, 0)
+        const alturaBg = 15522; // La altura original de la imagen grande sobre la que se ha puesto el resto de sprites. Reduce el tiempo de carga
+        this.crucifix = this.physics.add.sprite(0, 0, 'crucifix').setOrigin(0, 0)    // Iniciar el crucifijo en cualquier parte
+        this.escalaBg = this.scale.height / alturaBg
 
         // MOVIMIENTO
         this.lastKeyExorcist
@@ -82,11 +72,6 @@ class GameScene extends Phaser.Scene {
             [8698, 13040], [1542, 10940], [6190, 9139],
             [1906, 6976], [4440, 5451], [4734, 3677]]
 
-
-        this.bgContainer = this.add.container(0, 0)
-        // Crear el mapa como fondo, dimensiones: 9962 x 15522
-        const background = this.add.image(0, 0, 'background4').setOrigin(0, 0)
-        this.crucifix = this.physics.add.sprite(0, 0, 'crucifix').setOrigin(0, 0)    // Iniciar el crucifijo en cualquier parte
 
         // #region COLLIDERS
         // Ejemplo para que los personajes no puedan atravesar paredes
@@ -167,13 +152,6 @@ class GameScene extends Phaser.Scene {
 
         this.roomsContainer.add([this.bedroom1, this.bedroom2, this.bedroom3, this.bathroom1, this.bathroom2, this.kitchen, this.diningRoom,
         this.storageRoom, this.livingRoom, this.hall, this.corridor1, this.corridor2, this.hall2]);
-
-        // Obtener la textura de la imagen
-        const textura = this.textures.get('background');
-        // Acceder a las dimensiones de la textura para escalar todo en base a las coordenadas de la imagen grande original
-        const alturaBg = textura.getSourceImage().height;
-
-        this.escalaBg = this.scale.height / alturaBg
         this.roomsContainer.setScale(this.escalaBg);
 
         // Poner los interruptores
@@ -253,7 +231,7 @@ class GameScene extends Phaser.Scene {
         // Texto inmunidad al recoger el crucifijo
         this.crucifixText = this.add.text(20, 100, 'Inmunity', { fontSize: '30px', color: '#FF0000' }).setVisible(false).setScrollFactor(0);
 
-        // #region MUERTE PERSONAJES
+        // #region VICTORIA
         // MATAR AL DEMONIO
         // Botón para matar al demonio
         this.killDemon = this.add.image(480, 900, "textBoxExorcist")
@@ -297,9 +275,9 @@ class GameScene extends Phaser.Scene {
         });
 
 
-        // Configurar teclas - pulsar E para recoger vela - SOLO EXORCISTA
         this.cursors = this.input.keyboard.createCursorKeys();
-        this.interactKey = this.input.keyboard.addKey('E');
+        // Configurar teclas - pulsar E para recoger vela - pulsar para toggle de los interruptores
+        this.interactKeyEx = this.input.keyboard.addKey('E');
         this.interactKeyDe = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 
         // Detectar colisiones con velas
@@ -572,9 +550,17 @@ class GameScene extends Phaser.Scene {
 
         scndCamera.ignore([this.visionAreaEx, divider, this.killDemon, this.killExorcist, ...pauseMenuElements, BGChat, onlineBG])
         this.cameras.main.ignore([this.visionAreaDe, divider, this.killDemon, this.killExorcist, ...pauseMenuElements, BGChat, onlineBG])
-
     }
 
+    toggleInteractKeys(state) {
+        if (state) {
+            this.interactKeyEx = this.input.keyboard.addKey('E');
+            this.interactKeyDe = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
+        }
+        else {
+            this.input.keyboard.removeCapture(['E', Phaser.Input.Keyboard.KeyCodes.ENTER]);
+        }
+    }
     // Método para alternar la visibilidad del menú de pausa
     togglePauseMenu(elements) {
         // Verifica si el primer elemento está visible
@@ -593,14 +579,71 @@ class GameScene extends Phaser.Scene {
             // Desactivar el botón del chat
             this.chatB.depth = -1   // Hacer que se vea oscuro porque tien el fade delante
             this.chatB.removeInteractive()
+            this.toggleInteractKeys(false)
         }
-        else{
+        else {
             this.chatB.depth = 1
             this.chatB.setInteractive()
+            this.toggleInteractKeys(true)
         }
     }
 
     // #region MÉTODO CHAT
+
+    // Método para alternar la visibilidad de la UI del chat
+    toggleChatMenu(elements) {
+        // Verifica si el primer elemento está visible
+        const isVisible = elements[0].visible;
+
+        // Alterna la visibilidad de cada elemento
+        elements.forEach(element => {
+            element.setVisible(!isVisible);
+        });
+
+        // Alterna el estado del chat
+        this.isChatActive = !isVisible;
+
+        if (this.isChatActive) {
+            // Pausar los controles
+            this.isPaused = this.isChatActive;
+            this.resetKeys()
+            this.demon.anims.stop('demonWalk'); // parar animación
+            this.exorcist.anims.stop('walk'); // parar animación
+
+            // Si el chat está activado, obtener los usuarios conectados
+            this.getConnectedUsers();
+            // Si el chat no está activo, lo activamos
+            this.isChatActive = true;
+            // Desactivar el botón de pausa
+            this.pauseButton.removeInteractive();
+            this.toggleInteractKeys(false)
+            this.pauseButton.depth = -1
+
+            if (!this.chatInitialized) {
+                this.chatInitialized = true;
+                // Obtener la instancia de ChatScene e inicializar el chat
+                this.chatScene = this.scene.get('ChatScene');
+                this.scene.launch("ChatScene", { posX: this.chatX, posY: this.chatY })   // Pasar su posición inicial
+            }
+            else {
+                this.scene.wake("ChatScene")    // Si está dormida se pausa su update y deja de enviar peticiones GET
+                // Una vez ya ha sido iniciada con launch, 
+                // se puede cambiar la posición del chat de esta manera
+                //this.chatScene.changePos(100, 100)  
+            }
+
+        } else {
+            // Si el chat se desactiva, ocultar los usuarios conectados
+            this.userList.destroy();
+            this.sleepChat()
+            // Activar los controles
+            this.isPaused = this.isChatActive;
+            this.pauseButton.depth = 1
+            // Activar el botón de pausa
+            this.pauseButton.setInteractive()
+            this.toggleInteractKeys(true)
+        }
+    }
 
     // Método para obtener los usuarios conectados
     async getConnectedUsers() {
@@ -638,64 +681,11 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    // Método para alternar la visibilidad de la UI del chat
-    toggleChatMenu(elements) {
-        // Verifica si el primer elemento está visible
-        const isVisible = elements[0].visible;
-
-        // Alterna la visibilidad de cada elemento
-        elements.forEach(element => {
-            element.setVisible(!isVisible);
-        });
-
-        // Alterna el estado del chat
-        this.isChatActive = !isVisible;
-
-        if (this.isChatActive) {
-            // Pausar los controles
-            this.isPaused = this.isChatActive;
-            this.resetKeys()
-            this.demon.anims.stop('demonWalk'); // parar animación
-            this.exorcist.anims.stop('walk'); // parar animación
-
-            // Si el chat está activado, obtener los usuarios conectados
-            this.getConnectedUsers();
-            // Si el chat no está activo, lo activamos
-            this.isChatActive = true;
-            // Desactivar el botón de pausa
-            this.pauseButton.removeInteractive();
-            this.pauseButton.depth = -1
-
-            if (!this.chatInitialized) {
-                this.chatInitialized = true;
-                // Obtener la instancia de ChatScene e inicializar el chat
-                this.chatScene = this.scene.get('ChatScene');
-                this.scene.launch("ChatScene", { posX: this.chatX, posY: this.chatY })   // Pasar su posición inicial
-            }
-            else {
-                this.scene.wake("ChatScene")    // Si está dormida se pausa su update y deja de enviar peticiones GET
-                // Una vez ya ha sido iniciada con launch, 
-                // se puede cambiar la posición del chat de esta manera
-                //this.chatScene.changePos(100, 100)  
-            }
-
-        } else {
-            // Si el chat se desactiva, ocultar los usuarios conectados
-            this.userList.destroy();
-            this.sleepChat()
-            // Activar los controles
-            this.isPaused = this.isChatActive;
-            this.pauseButton.depth = 1
-            // Activar el botón de pausa
-            this.pauseButton.setInteractive()
-        }
-    }
-
     sleepChat() {
         this.scene.sleep("ChatScene");  // Ponemos la escena del chat a dormir
     }
-
     // #endregion
+
 
     // #region OTROS
 
@@ -799,7 +789,7 @@ class GameScene extends Phaser.Scene {
 
     // RECOGER VELA
     collectCandle(exorcist, candle) {
-        if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+        if (!this.isPaused && Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
             this.sound.play("pickUpCandle"); // Reproducir sonido al recoger la vela
             candle.destroy(); // Eliminar la vela del mapa
             this.candleCount++; // Aumentar el contador
@@ -812,7 +802,7 @@ class GameScene extends Phaser.Scene {
     // COMPLETAR UN RITUAL
     // Método para colocar una vela en un ritual
     placeCandle(exorcist, ritualCollider) {
-        if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+        if (!this.isPaused && Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
             // Verificar si hay velas disponibles
             if (this.candleCount > 0) {
                 this.sound.play("match");
@@ -867,9 +857,9 @@ class GameScene extends Phaser.Scene {
 
     // USAR INTERRUPTOR
     cambiarInterruptores(player, interruptor) {
-        if (interruptor != undefined) {
+        if (!this.isPaused && interruptor != undefined) {
             if (player == this.exorcist) {
-                if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+                if (Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
                     if (!this.lucesEncendidas) {
                         this.encenderLuces()
                     }

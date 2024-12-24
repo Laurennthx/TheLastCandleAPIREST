@@ -29,7 +29,6 @@ class LoadingScene extends Phaser.Scene {
         this.load.image('divider', 'assets/UI/divider5.png');
 
         // map
-        this.load.image('background', 'assets/House/fondo3pentagonos.png')
         this.load.image('background1', 'assets/House/fondo3pentagonosPeque1.png')
         this.load.image('background2', 'assets/House/fondo3pentagonosPeque2.png')
         this.load.image('background3', 'assets/House/fondo3pentagonosPeque3.png')

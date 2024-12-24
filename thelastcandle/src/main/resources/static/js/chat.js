@@ -5,8 +5,8 @@ class ChatScene extends Phaser.Scene {
 
     preload() {
         this.load.html('chat', 'chat.html');
-        this.soundSend = new Audio('assets/Music/chat effect/sent.mp3'); // Ruta al sonido
-        this.soundReceive = new Audio('assets/Music/chat effect/receivedd.mp3'); // Ruta al sonido
+        this.soundSend = new Audio('assets/Music/chat_effect/sent.mp3'); // Ruta al sonido
+        this.soundReceive = new Audio('assets/Music/chat_effect/receivedd.mp3'); // Ruta al sonido
 
     }
 
@@ -20,11 +20,11 @@ class ChatScene extends Phaser.Scene {
     fetchMessages(chatMessages) {
         $.get("/api/chat/", function (data) {
             if (data && data.length > 0) {
-                chatMessages.innerHTML = ""; 
+                chatMessages.innerHTML = "";
                 data.forEach(msg => {
                     const messageElement = document.createElement("div");
                     messageElement.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`
-                    chatMessages.appendChild(messageElement); 
+                    chatMessages.appendChild(messageElement);
                 });
             }
         });
@@ -43,13 +43,14 @@ class ChatScene extends Phaser.Scene {
             url: "/api/chat/",
             method: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ 
+            data: JSON.stringify({
                 username: window.GameData.currentUser,
-                message: message 
+                message: message
             }), // Enviar como JSON
             success: () => {
                 this.chatInput.value = "";
                 this.fetchMessages(this.chatMessages);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
             },
             error: (xhr) => {
                 console.error("Error al enviar el mensaje:", xhr.responseText);
