@@ -7,12 +7,12 @@ class LoadingScene extends Phaser.Scene {
         // Carga la imagen de fondo para la pantalla de carga
         this.load.image('LoadingBG', 'assets/UI/Loading.jpg');
 
-               // AUDIOS
-               this.load.audio("pickUpCandle", 'assets/Music/effects/candle/putItem.mp3');
-               this.load.audio("LightCandle", 'assets/Music/effects/candle/lightItem.mp3');
-               this.load.audio("match", 'assets/Music/effects/candle/match.mp3');
-               this.load.audio("switch", 'assets/Music/effects/interruptor/switch.mp3');
-               this.load.audio("crucifix", 'assets/Music/effects/crucifix/chakra7.mp3');
+        // AUDIOS
+        this.load.audio("pickUpCandle", 'assets/Music/effects/candle/putItem.mp3');
+        this.load.audio("LightCandle", 'assets/Music/effects/candle/lightItem.mp3');
+        this.load.audio("match", 'assets/Music/effects/candle/match.mp3');
+        this.load.audio("switch", 'assets/Music/effects/interruptor/switch.mp3');
+        this.load.audio("crucifix", 'assets/Music/effects/crucifix/chakra7.mp3');
 
         // Mostrar la imagen de fondo
         this.load.once('filecomplete-image-LoadingBG', () => {
@@ -36,7 +36,7 @@ class LoadingScene extends Phaser.Scene {
 
         // muebles
         this.load.image('bookshelf', 'assets/Decorations_hide/Bookshelf.png')
-        
+
 
         // crucifix
         this.load.image('crucifix', 'assets/Objects/crucifix.png')
@@ -77,9 +77,6 @@ class LoadingScene extends Phaser.Scene {
             frameWidth: 1280,  // Ancho de cada fotograma
             frameHeight: 1853  // Altura de cada fotograma
         });
-
-
-
     }
 
     create() {
