@@ -43,17 +43,53 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      * tasks.
      */
     private static class Game {
+        int init; // Jugadores seleccionan personaje
+        int ready; // Jugadores seleccionan personaje
+
         Player player1;
         Player player2;
-        List<Object> candlesAvailable; // Información de las velas: posición y si ha sido obtenida o no
         int score;
+
+        List<Candle> candles; // Velas de la partida
+        int nCandles;
+
         int timeForCrucifix = 10; // Tiempo para que salga el crucifijo
         ScheduledFuture<?> timerTask;
 
         Game(Player player1, Player player2) {
+            this.ready = 0;
             this.player1 = player1;
             this.player2 = player2;
             this.score = 0;
+            this.nCandles = 5;
+        }
+    }
+
+    private final List<Room> rooms = new ArrayList<>();
+    private final Random random = new Random();
+    private double escalaBg = (double) 1080 / 15522;
+    private double anchuraVela = 865 * 0.013 / escalaBg;
+    private double alturaVela = 1449 * 0.013 / escalaBg;
+
+    private static class Room {
+        double x, y, width, height;
+
+        public Room(double x, double y, double width, double height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    private static class Candle {
+        int id;
+        double x, y;
+
+        public Candle(int id, double x, double y) {
+            this.id = id;
+            this.x = x;
+            this.y = y;
         }
     }
 
@@ -110,6 +146,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                 Game game = new Game(player1, player2);
                 games.put(session1.getId(), game);
                 games.put(session2.getId(), game);
+
+                gameInit(game);
             }
         }
     }
@@ -118,22 +156,31 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      * Initializes a new game by sending initial states to players and starting the
      * game loop.
      * Message format 'i': Initial game state with player positions and candles
+     * Message format 'p': Ids and positions of the candles to generate
      */
-    private void startGame(Game game) {
+    private void gameInit(Game game) {
+
+        // Generar las velas y enviarlas
+        game.candles = generateCandles(game.nCandles);
+        List<List<Object>> candlePositions = new ArrayList<>();
+        for (Candle candle : game.candles) {
+            System.out.println(candle);
+            candlePositions.add(Arrays.asList(candle.id, candle.x, candle.y));
+        }
+
+        // Send the positions of the candles to both players.
+        sendToPlayer(game.player1, "c", candlePositions);
+        sendToPlayer(game.player2, "c", candlePositions);
+
         // Create initial player data: [x, y, playerId]
         List<List<Object>> playersData = Arrays.asList(
                 Arrays.asList(game.player1.x, game.player1.y, 1), // Player 1: Exorcist
                 Arrays.asList(game.player2.x, game.player2.y, 2) // Player 2: Demon
         );
 
-        // Generar las velas y enviarlas
-
         // Send initial state to both players.
         sendToPlayer(game.player1, "i", Map.of("id", 1, "p", playersData));
         sendToPlayer(game.player2, "i", Map.of("id", 2, "p", playersData));
-
-        // Comenzar el timer del crucifijo
-
     }
 
     // #endregion
@@ -167,9 +214,17 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
                 case 'v': // Recolección de velas. Actualizar la vela recogida y la puntuación
                     Integer candleRemoved = mapper.readValue(data, Integer.class);
-                    if (game.candlesAvailable.get(candleRemoved) != null) { // NOTA: es necesario este if?
+                    if (game.candles.get(candleRemoved) != null) { // NOTA: es necesario este if?
                         List<Integer> scoreData = Arrays.asList(candleRemoved, ++game.score);
                         sendToPlayer(otherPlayer, "v", scoreData);
+                    }
+                    break;
+                case 'r': // Un jugador está ready para EMPEZAR la partida
+                    if (++game.ready == 2) {
+                        // Comenzar el timer del crucifijo
+
+                        sendToPlayer(currentPlayer, "r", null);
+                        sendToPlayer(otherPlayer, "r", null);
                     }
                     break;
             }
@@ -206,21 +261,17 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      */
     private void endGame(Game game) {
         // NOTA: cambiar esto
-        // Send final scores to both players
-        List<Integer> finalScores = Arrays.asList(game.player1.score, game.player2.score);
+        // // Send final scores to both players
+        // List<Integer> finalScores = Arrays.asList(game.player1.score,
+        // game.player2.score);
 
-        if (this.players.containsKey(game.player1.session.getId())) {
-            sendToPlayer(game.player1, "o", finalScores);
-        }
+        // if (this.players.containsKey(game.player1.session.getId())) {
+        // sendToPlayer(game.player1, "o", finalScores);
+        // }
 
-        if (this.players.containsKey(game.player2.session.getId())) {
-            sendToPlayer(game.player2, "o", finalScores);
-        }
-
-        // Cancel timer and cleanup game resources
-        if (game.timerTask != null) {
-            game.timerTask.cancel(false);
-        }
+        // if (this.players.containsKey(game.player2.session.getId())) {
+        // sendToPlayer(game.player2, "o", finalScores);
+        // }
 
         games.remove(game.player1.session.getId());
         games.remove(game.player2.session.getId());
@@ -240,5 +291,79 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             endGame(game);
         }
 
+    }
+
+    // #region VELAS
+
+    // Crear las habitaciones
+    {
+        rooms.add(new Room(1001.5, 3870, 1495, 2390)); // bedroom1
+        rooms.add(new Room(2934, 2545.5, 2130, 1471)); // bedroom2
+        rooms.add(new Room(7056, 2539, 2566, 1496)); // bedroom3
+        rooms.add(new Room(4886.5, 2533, 1471, 1458)); // bathroom1
+        rooms.add(new Room(2512, 12016.5, 2124, 1205)); // bathroom2
+        rooms.add(new Room(5341.5, 7329.5, 2723, 2693)); // kitchen
+        rooms.add(new Room(2030, 8084.5, 3564, 1175)); // diningRoom
+        rooms.add(new Room(8738, 14278, 1634, 1520)); // storageRoom
+        rooms.add(new Room(5704, 11096.5, 4048, 2977)); // livingRoom
+        rooms.add(new Room(1968.5, 10037, 3455, 872)); // hall
+        rooms.add(new Room(3229 + 2895 / 2, 4195 + 878 / 2, 2895, 878)); // corridor1
+        rooms.add(new Room(6884 + 868 / 2, 5080 + 4538 / 2, 868, 4538)); // corridor2
+        rooms.add(new Room(3700 + 4046 / 2, 13520 + 1500 / 2, 4046, 1500)); // hall2
+    }
+
+    /**
+     * Genera las velas en posiciones aleatorias.
+     * Devuelve una lista de velas.
+     * 
+     * @param {count} - Número de velas a generar.
+     */
+    public List<Candle> generateCandles(int count) {
+        double minDistance = 3500;
+        List<double[]> positions = new ArrayList<>();
+        List<Candle> candles = new ArrayList<>();
+
+        for (int i = 0; i < count; i++) {
+            double x = 0, y = 0;
+            boolean validPosition = false;
+            double minDistanceTemp = minDistance;
+            int nIterations = 0;
+
+            while (!validPosition) {
+                if (nIterations++ == rooms.size()) {
+                    minDistanceTemp = 0;
+                }
+                // Escoger una habitación al azar
+                Room randomRoom = rooms.get(random.nextInt(rooms.size()));
+                int nAttempts = 10;
+
+                for (int j = 0; j < nAttempts; j++) {
+                    System.out.println("Intento: " + i + ", " + j);
+                    validPosition = true;
+
+                    x = randomRoom.x + random.nextDouble() * (randomRoom.width - 2 * anchuraVela)
+                            - randomRoom.width / 2 + anchuraVela;
+                    y = randomRoom.y + random.nextDouble() * (randomRoom.height - 2 * alturaVela)
+                            - randomRoom.height / 2 + alturaVela;
+
+                    for (double[] pos : positions) {
+                        double distance = Math.sqrt(Math.pow(x - pos[0], 2) + Math.pow(y - pos[1], 2));
+                        System.out.println(distance + " " + minDistanceTemp);
+                        if (distance < minDistanceTemp) {
+                            System.out.println("Comparando...");
+                            validPosition = false;
+                            break;
+                        }
+                    }
+
+                    if (validPosition) {
+                        break;
+                    }
+                }
+            }
+            positions.add(new double[]{x, y});
+            candles.add(new Candle(i, x * escalaBg, y * escalaBg));
+        }
+        return candles;
     }
 }

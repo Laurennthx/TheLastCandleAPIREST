@@ -80,7 +80,19 @@ class LoadingScene extends Phaser.Scene {
     }
 
     create() {
+        //Parámetro para ir al juego online o no
+        const { online } = this.scene.settings.data;
         // Iniciar la escena del juego una vez terminada la carga
-        this.scene.start('GameScene');
+        if (online != null) {
+            if (online == true) {
+                this.scene.start('GameOnlineScene');
+            }
+            else {
+                this.scene.start('GameScene');
+            }
+        }
+        else {
+            this.scene.start('GameScene');
+        }
     }
 }

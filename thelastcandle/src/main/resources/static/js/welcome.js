@@ -33,14 +33,14 @@ class WelcomeScene extends Phaser.Scene {
         this.input.keyboard.on('keydown', () => {
             this.sound.play("select"); // sonido de selección
             this.scene.stop("WelcomeScene"); // detener escena actual
-            this.scene.start("UserScene"); // iniciar siguiente escena
+            this.scene.start("LoadingScene", {online: true}); // iniciar siguiente escena
         });
 
         // Detectar clic del ratón para avanzar de escena
         this.input.on('pointerdown', () => {
             this.sound.play("select"); // sonido de selección
             this.scene.stop("WelcomeScene"); // detener escena actual
-            this.scene.start("UserScene"); // iniciar siguiente escena
+            this.scene.start("LoadingScene", {online: true}); // iniciar siguiente escena
         });
     }
 

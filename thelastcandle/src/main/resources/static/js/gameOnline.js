@@ -1,14 +1,46 @@
+/**
+ * Message types used for WebSocket communication.
+ * @enum {string}
+ */
+const MSG_TYPES = {
+    INIT: 'i',        // Initialize game state
+    SELECT: 's',        // Select character
+    READY: 'r',        // Initialize game state
+    POS: 'p',         // Update player position
+    CANDLES: 'c',      // Spawn candles
+    COLLECT: 'v',     // Candle collection event
+    TIME: 't',        // Update game timer
+    OVER: 'o'         // End game event
+};
+
 class GameOnlineScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameOnlineScene' });
         this.candleCount = 0; // Contador de velas en el inventario
         this.ritualCount = 0; // Contador de rituales completados
 
-    }
+        // Game variables
+        /** @type {Phaser.GameObjects.GameObject} Player 1, controlled character */
+        this.player = null;
 
-    init() {
-        this.gameStarted = false;
-        this.score = 0;
+        /** @type {Phaser.GameObjects.GameObject} Player 2, opponent's character */
+        this.otherPlayer = null;
+
+        /** @type {WebSocket} WebSocket for server communication */
+        this.socket = null;
+
+        // Network optimization variables
+        /** @type {{x: number, y: number}} Last sent position */
+        this.lastSentPosition = { x: 0, y: 0 };
+
+        /** @type {number} Last update timestamp */
+        this.lastUpdateTime = 0;
+
+        /** @type {number} Interval for position updates in milliseconds */
+        this.POSITION_UPDATE_INTERVAL = 50;
+
+        /** @type {number} Minimum movement threshold for sending position updates */
+        this.POSITION_THRESHOLD = 2;
     }
 
     // #region PRELOAD
@@ -45,12 +77,15 @@ class GameOnlineScene extends Phaser.Scene {
 
     // #region CREATE
     create() {
-
         this.isPaused = false; // Estado inicial del juego no pausado
+
+        // Connect to WebSocket
+        this.socket = new WebSocket("ws://" + location.host + "/ws");
+        // Setup WebSocket event handlers
+        this.setupWebSocket();
 
         // MUNDO
         const zoomCamara = 4
-
         this.bgContainer = this.add.container(0, 0)
         // Crear el mapa como fondo, dimensiones: 9962 x 15522
         const background = this.add.image(0, 0, 'background4').setOrigin(0, 0)
@@ -178,10 +213,10 @@ class GameOnlineScene extends Phaser.Scene {
 
         // #endregion
 
-        // #region GENERACION VELAS
+        // GENERACION VELAS
         // Crear velas
         this.candles = this.physics.add.group(); // Grupo para las velas
-        this.generateCandles(5); // Generar 5 velas
+
 
         // #region PERSONAJES 
 
@@ -550,6 +585,13 @@ class GameOnlineScene extends Phaser.Scene {
 
         scndCamera.ignore([this.visionAreaEx, divider, this.killDemon, this.killExorcist, ...pauseMenuElements, BGChat, onlineBG])
         this.cameras.main.ignore([this.visionAreaDe, divider, this.killDemon, this.killExorcist, ...pauseMenuElements, BGChat, onlineBG])
+
+
+
+        // this.scene.pause()
+        // console.log("Escena pausada")
+        //this.add.image(this.scale.width / 2, this.scale.height / 2, 'LoadingBG').setOrigin(0.5).setDisplaySize(this.scale.width, this.scale.height);
+        //this.scene.launch("ChoosingCharacterScene")
     }
 
     toggleInteractKeys(state) {
@@ -727,65 +769,8 @@ class GameOnlineScene extends Phaser.Scene {
         this.sound.play("crucifix"); // Reproducir sonido al recoger la vela
     }
 
+    // #region VELAS
 
-    /**
-     * Genera las velas en posiciones aleatorias.
-     * @param {number} count - Número de velas a generar.
-     */
-
-    // #region GENERACION VELAS
-
-    // CREACIÓN ALEATORIA DE VELAS
-    generateCandles(count) {
-        const texturaVela = this.textures.get('candle');
-        const anchuraVela = texturaVela.getSourceImage().width * 0.013 / this.escalaBg
-        const alturaVela = texturaVela.getSourceImage().height * 0.013 / this.escalaBg
-
-        const minDistance = 2500; // Distancia mínima entre velas
-        const positions = []; // Para almacenar las posiciones ya usadas
-        const rooms = [this.bedroom1, this.bedroom2, this.bedroom3, this.bathroom2, this.kitchen, this.livingRoom, this.hall, this.corridor1, this.corridor2, this.hall2]
-
-        // For que se repite count veces, donde count es el numero de velas a generar
-        for (let i = 0; i < count; i++) {
-            let x, y
-            let validPosition
-            let minDistanceTemp = minDistance
-            let nIteracions = 0
-            while (!validPosition) {
-                if (nIteracions++ == rooms.length) minDistanceTemp = 0
-                // Escoger una habitación al azar
-                const randomRoom = Phaser.Utils.Array.GetRandom(rooms);
-                let nIntentos = 10  // Va a hacer 10 intentos de encontrar una posición válida en esa habitación
-
-                for (let j = 0; j < nIntentos; j++) {
-                    validPosition = true
-
-                    // Generar una posición al azar en esa habitación
-                    x = randomRoom.x + Phaser.Math.Between(-randomRoom.width / 2 + 100, randomRoom.width / 2 - anchuraVela);
-                    y = randomRoom.y + Phaser.Math.Between(-randomRoom.height / 2, randomRoom.height / 2 - alturaVela);
-
-                    // Asegurarse que no está cerca de ninguna otra vela
-                    for (let pos of positions) {
-                        const distance = Phaser.Math.Distance.Between(x, y, pos.x, pos.y);
-                        if (distance < minDistanceTemp) {
-                            validPosition = false;  // Salir del for si hay alguna otra vela cerca
-                            break;
-                        }
-                    }
-                    if (validPosition) break // Si ha encontrado una posición válida sale del for. Si no, busca otra posición
-                }
-            }
-            // Guardar la posición y crear la vela
-            positions.push({ x, y });
-            const candle = this.candles.create(x * this.escalaBg, y * this.escalaBg, 'candle')  // Escalar su posición a la hora de generarlas
-            // Configuración de la vela
-            candle.setScale(0.013, 0.013)
-                .setCollideWorldBounds(true)
-                .setImmovable(true); // Evitar que se mueva por colisiones
-
-            candle.body.setAllowGravity(false); // Desactiva la gravedad
-        }
-    }
 
     // RECOGER VELA
     collectCandle(exorcist, candle) {
@@ -1150,5 +1135,76 @@ class GameOnlineScene extends Phaser.Scene {
         this.visionAreaDe.setPosition(this.demon.x, this.demon.y)
 
         if (this.crucifijoObtenido) this.aura.setPosition(this.exorcist.x, this.exorcist.y)
+    }
+
+    /**
+     * Configures WebSocket event handlers for communication.
+     */
+    setupWebSocket() {
+        this.socket.onopen = () => {
+            console.log('Connected to server');
+        };
+
+        this.socket.onmessage = (event) => {
+            const type = event.data.charAt(0);
+            const data = event.data.length > 1 ? JSON.parse(event.data.substring(1)) : null;
+
+            switch (type) {
+                case MSG_TYPES.INIT:
+                    this.handleInit(data);
+                    break;
+                case MSG_TYPES.READY:
+                    this.handleReady(data);
+                    break;
+                case MSG_TYPES.POS:
+                    this.handlePosition(data);
+                    break;
+                case MSG_TYPES.CANDLES: // type 'c'
+                    this.handleCandleSpawn(data);
+                    break;
+                case MSG_TYPES.COLLECT:
+                    this.handleCandleCollection(data);
+                    break;
+                case MSG_TYPES.TIME:
+                    this.handleTime(data);
+                    break;
+                case MSG_TYPES.OVER:
+                    this.handleGameOver(data);
+                    break;
+            }
+        };
+
+        this.socket.onclose = () => {
+            this.gameStarted = false;
+        };
+    }
+
+    handleInit(data){
+        console.log(data)
+    }
+
+    // type 'c'
+    handleCandleSpawn(data) {
+        console.log(data)
+        data.forEach(candleData => {
+            this.createCandle(candleData[0], candleData[1], candleData[2])
+        })
+    }
+
+    createCandle(id, x, y) {
+        // Crear el sprite de la vela
+        const candle = this.candles.create(x, y, 'candle');
+
+        console.log("candle created: " + id + " " + x + " " + y)
+
+        // Asignar un ID al sprite
+        candle.setData('id', id);
+
+        candle.setScale(0.013, 0.013)
+            .setCollideWorldBounds(true)
+            .setImmovable(true); // Evitar que se mueva por colisiones
+        candle.body.setAllowGravity(false); // Desactiva la gravedad
+
+        //NOTA: alomejor activar aquí la colisión
     }
 }

@@ -13,79 +13,40 @@ The protocol uses specific message types to communicate between the client and s
 - **Type:** `i`
 - **Description:** Sent by the server to initialize the game state for a player.
 - **Data Format:**
-  ```json
-  {
-      "id": <playerId>,
-      "p": [
-          [x, y, id, color],
-          [x, y, id, color],
-          ...
-      ]
-  }
-  ```
-  - `id`: The ID of the player receiving the message.
-  - `p`: An array of all players' initial positions and properties:
-    - `x`, `y`: Coordinates.
-    - `id`: Player ID.
-    - `color`: Color of the player (hexadecimal).
 
 ### 2. **Position Update (`p`):**
 
 - **Type:** `p`
 - **Description:** Sent by a client to update their position, or by the server to update another player’s position.
-- **Data Format:**
+- **Data Format (Client to Server):**
+  ```json
+  [x, y]
+  ```
+  - `x`, `y`: The new coordinates of the player.
+- **Data Format (Server to Clients):**
   ```json
   [playerId, x, y]
   ```
   - `playerId`: The ID of the player whose position is updated.
   - `x`, `y`: The new coordinates of the player.
 
-### 3. **Square Spawn (`s`):**
+### 3. **Candle Collection (`v`):**
 
-- **Type:** `s`
-- **Description:** Sent by the server to spawn a new square.
-- **Data Format:**
-  ```json
-  [x, y]
-  ```
-  - `x`, `y`: Coordinates of the square.
-
-### 4. **Square Collection (`c`):**
-
-- **Type:** `c`
-- **Description:** Sent by a client to indicate a square collection, or by the server to update scores after a collection.
+- **Type:** `v`
+- **Description:** Sent by a client to indicate a candle collection, or by the server to update scores and candles after a collection.
 - **Data Format (Client to Server):**
-  No additional data is required.
+  ```json
+  <candleId>
+  ```
+  - `candleId`: ID of the candle obtained.
 - **Data Format (Server to Clients):**
   ```json
-  [squareId, playerScore, otherScore]
+  [candleId, score]
   ```
-  - `squareId`: Identifier for the collected square.
-  - `playerScore`: Updated score of the collecting player.
-  - `otherScore`: Updated score of the other player.
+  - `candleId`: Identifier for the collected candle.
+  - `score`: Updated score of the candles the exorcist has collected.
 
-### 5. **Time Update (`t`):**
 
-- **Type:** `t`
-- **Description:** Sent by the server to update the remaining game time.
-- **Data Format:**
-  ```json
-  <timeLeft>
-  ```
-  - `timeLeft`: Remaining time in seconds.
-
-### 6. **Game Over (`o`):**
-
-- **Type:** `o`
-- **Description:** Sent by the server to end the game and provide the final scores.
-- **Data Format:**
-  ```json
-  [playerScore, otherScore]
-  ```
-  - `playerScore`: Final score of the player receiving the message.
-  - `otherScore`: Final score of the other player.
-
----
 
 ## Example Communication
 

@@ -36,35 +36,14 @@ class GameModeScene extends Phaser.Scene {
         .setInteractive()
         .on('pointerdown', () => {
             this.sound.play("select");
-            //this.scene.stop("GameMode");
-            //this.scene.start("ChoosingCharacterScene");   
+            this.scene.stop("GameMode");
+            this.scene.start("LoadingScene",{ online: true });   
         }).on('pointerover', () => {
             this.sound.play("hover"); // Reproduce sonido al pasar el cursor
         });  
         onlineB.setScale(0.7,0.7);
-    
-        // Imagen aviso online no disponible
-        const warning = this.add.image(1300, 675, "notAble");
-        warning.setScale(1.5,1.5);
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     }
 
-
-
-
-       
-    
     update() {
     }
 }
