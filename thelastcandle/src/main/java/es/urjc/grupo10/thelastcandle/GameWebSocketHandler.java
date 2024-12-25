@@ -164,7 +164,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         game.candles = generateCandles(game.nCandles);
         List<List<Object>> candlePositions = new ArrayList<>();
         for (Candle candle : game.candles) {
-            System.out.println(candle);
             candlePositions.add(Arrays.asList(candle.id, candle.x, candle.y));
         }
 
@@ -211,11 +210,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     sendToPlayer(otherPlayer, "p",
                             Arrays.asList(currentPlayer.playerId, currentPlayer.x, currentPlayer.y));
                     break;
-
                 case 'v': // Recolección de velas. Actualizar la vela recogida y la puntuación
                     Integer candleRemoved = mapper.readValue(data, Integer.class);
-                    if (game.candles.get(candleRemoved) != null) { // NOTA: es necesario este if?
+                    if (game.candles.get(candleRemoved - 1).id != -1) { // NOTA: es necesario este if?
+                        game.candles.get(candleRemoved - 1).id = -1;
                         List<Integer> scoreData = Arrays.asList(candleRemoved, ++game.score);
+                        sendToPlayer(currentPlayer, "v", scoreData);
                         sendToPlayer(otherPlayer, "v", scoreData);
                     }
                     break;
@@ -300,11 +300,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         rooms.add(new Room(1001.5, 3870, 1495, 2390)); // bedroom1
         rooms.add(new Room(2934, 2545.5, 2130, 1471)); // bedroom2
         rooms.add(new Room(7056, 2539, 2566, 1496)); // bedroom3
-        rooms.add(new Room(4886.5, 2533, 1471, 1458)); // bathroom1
         rooms.add(new Room(2512, 12016.5, 2124, 1205)); // bathroom2
         rooms.add(new Room(5341.5, 7329.5, 2723, 2693)); // kitchen
-        rooms.add(new Room(2030, 8084.5, 3564, 1175)); // diningRoom
-        rooms.add(new Room(8738, 14278, 1634, 1520)); // storageRoom
         rooms.add(new Room(5704, 11096.5, 4048, 2977)); // livingRoom
         rooms.add(new Room(1968.5, 10037, 3455, 872)); // hall
         rooms.add(new Room(3229 + 2895 / 2, 4195 + 878 / 2, 2895, 878)); // corridor1
@@ -319,7 +316,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      * @param {count} - Número de velas a generar.
      */
     public List<Candle> generateCandles(int count) {
-        double minDistance = 3500;
+        double minDistance = 2500;
         List<double[]> positions = new ArrayList<>();
         List<Candle> candles = new ArrayList<>();
 
@@ -338,7 +335,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                 int nAttempts = 10;
 
                 for (int j = 0; j < nAttempts; j++) {
-                    System.out.println("Intento: " + i + ", " + j);
                     validPosition = true;
 
                     x = randomRoom.x + random.nextDouble() * (randomRoom.width - 2 * anchuraVela)
@@ -348,9 +344,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
                     for (double[] pos : positions) {
                         double distance = Math.sqrt(Math.pow(x - pos[0], 2) + Math.pow(y - pos[1], 2));
-                        System.out.println(distance + " " + minDistanceTemp);
                         if (distance < minDistanceTemp) {
-                            System.out.println("Comparando...");
                             validPosition = false;
                             break;
                         }
@@ -361,8 +355,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     }
                 }
             }
-            positions.add(new double[]{x, y});
-            candles.add(new Candle(i, x * escalaBg, y * escalaBg));
+            positions.add(new double[] { x, y });
+            candles.add(new Candle(i + 1, x * escalaBg, y * escalaBg));
         }
         return candles;
     }

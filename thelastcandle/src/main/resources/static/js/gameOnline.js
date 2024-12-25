@@ -9,6 +9,7 @@ const MSG_TYPES = {
     POS: 'p',         // Update player position
     CANDLES: 'c',      // Spawn candles
     COLLECT: 'v',     // Candle collection event
+    PLACE: 'l',         // Place a candle
     TIME: 't',        // Update game timer
     OVER: 'o'         // End game event
 };
@@ -315,8 +316,7 @@ class GameOnlineScene extends Phaser.Scene {
         this.interactKeyEx = this.input.keyboard.addKey('E');
         this.interactKeyDe = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
 
-        // Detectar colisiones con velas
-        this.physics.add.overlap(this.exorcist, this.candles, this.collectCandle, null, this);
+
         // Detectar colisiones con rituales
         this.physics.add.overlap(this.exorcist, this.grupoRituales, this.placeCandle, null, this);
         // Detectar colisión del exorcista con el crucifijo
@@ -776,10 +776,9 @@ class GameOnlineScene extends Phaser.Scene {
     collectCandle(exorcist, candle) {
         if (!this.isPaused && Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
             this.sound.play("pickUpCandle"); // Reproducir sonido al recoger la vela
-            candle.destroy(); // Eliminar la vela del mapa
-            this.candleCount++; // Aumentar el contador
-            this.candleText.setText(`Candles: ${this.candleCount}`); // Actualizar el texto
-            this.candleIcon.setVisible(true); // Mostrar el icono
+            var candleId = candle.data.get('id'); // Obtener el id
+            // Enviar la vela recogida al otro jugador
+            this.sendMessage(MSG_TYPES.COLLECT, candleId)
         }
     }
 
@@ -964,32 +963,20 @@ class GameOnlineScene extends Phaser.Scene {
             if (this.keysPressedDe[3][1] == true) {
                 this.demon.flipX = false; // Si al soltar la A, se estaba moviendo hacia la D, se voltea el sprite
             }
-            if (this.characterIsStill(this.demon)) {
-                this.demon.anims.stop('demonWalk'); // parar animación
-            }
         });
         this.input.keyboard.on('keyup-UP', (event) => {
             if (this.isPaused) return; // Bloquea acción si está pausado
             this.keysPressedDe[1][1] = false
-            if (this.characterIsStill(this.demon)) {
-                this.demon.anims.stop('demonWalk'); // parar animación
-            }
         });
         this.input.keyboard.on('keyup-DOWN', (event) => {
             if (this.isPaused) return; // Bloquea acción si está pausado
             this.keysPressedDe[2][1] = false
-            if (this.characterIsStill(this.demon)) {
-                this.demon.anims.stop('demonWalk'); // parar animación
-            }
         });
         this.input.keyboard.on('keyup-RIGHT', (event) => {
             if (this.isPaused) return; // Bloquea acción si está pausado
             this.keysPressedDe[3][1] = false
             if (this.keysPressedDe[0][1] == true) {
                 this.demon.flipX = true; // Si al soltar la A, se estaba moviendo hacia la D, se voltea el sprite
-            }
-            if (this.characterIsStill(this.demon)) {
-                this.demon.anims.stop('demonWalk'); // parar animación
             }
         });
     }
@@ -1030,32 +1017,20 @@ class GameOnlineScene extends Phaser.Scene {
             if (this.keysPressedEx[3][1] == true) {
                 this.exorcist.flipX = false; // Si al soltar la A, se estaba moviendo hacia la D, se voltea el sprite
             }
-            if (this.characterIsStill(this.exorcist)) {
-                this.exorcist.anims.stop('walk'); // parar animación
-            }
         });
         this.input.keyboard.on('keyup-W', (event) => {
             if (this.isPaused) return; // Bloquea acción si está pausado
             this.keysPressedEx[1][1] = false
-            if (this.characterIsStill(this.exorcist)) {
-                this.exorcist.anims.stop('walk'); // parar animación
-            }
         });
         this.input.keyboard.on('keyup-S', (event) => {
             if (this.isPaused) return; // Bloquea acción si está pausado
             this.keysPressedEx[2][1] = false
-            if (this.characterIsStill(this.exorcist)) {
-                this.exorcist.anims.stop('walk'); // parar animación
-            }
         });
         this.input.keyboard.on('keyup-D', (event) => {
             if (this.isPaused) return; // Bloquea acción si está pausado
             this.keysPressedEx[3][1] = false
             if (this.keysPressedEx[0][1] == true) {
                 this.exorcist.flipX = true; // Si al soltar la D, se estaba moviendo hacia la A, se voltea el sprite
-            }
-            if (this.characterIsStill(this.exorcist)) {
-                this.exorcist.anims.stop('walk'); // parar animación
             }
         });
     }
@@ -1068,26 +1043,6 @@ class GameOnlineScene extends Phaser.Scene {
             this.keysPressedDe[i][1] = false;
         }
     }
-
-    characterIsStill(character) {
-        var nKeysPressed = 0
-        if (character == this.demon) {
-            for (let i = 0; i < this.keysPressedDe.length; i++) {
-                if (this.keysPressedDe[i][1] == true) {
-                    nKeysPressed++
-                }
-            }
-        }
-        else if (character == this.exorcist) {
-            for (let i = 0; i < this.keysPressedEx.length; i++) {
-                if (this.keysPressedEx[i][1] == true) {
-                    nKeysPressed++
-                }
-            }
-        }
-        return nKeysPressed == 0
-    }
-
 
     hitExorcist() {
         if (this.crucifijoObtenido) {
@@ -1104,11 +1059,6 @@ class GameOnlineScene extends Phaser.Scene {
         }
     }
 
-    startGame() {
-        this.gameStarted = true;
-    }
-
-
     // #region UPDATE
     update(time, delta) {
         this.demon.setVelocity(0, 0)
@@ -1118,6 +1068,9 @@ class GameOnlineScene extends Phaser.Scene {
                 if (this.lastKeyDemon == i) break
             }
         }
+        if (this.demon.body.velocity.x == 0 && this.demon.body.velocity.y == 0) {
+            this.demon.anims.stop('demonWalk'); // parar animación
+        }
 
         this.exorcist.setVelocity(0, 0)
         for (let i = 0; i < this.keysPressedEx.length; i++) {
@@ -1125,6 +1078,9 @@ class GameOnlineScene extends Phaser.Scene {
                 this.exorcist.setVelocity(this.keysPressedEx[i][0][0] * this.speedEx, this.keysPressedEx[i][0][1] * this.speedEx)
                 if (this.lastKeyExorcist == i) break
             }
+        }
+        if (this.exorcist.body.velocity.x == 0 && this.exorcist.body.velocity.y == 0) {
+            this.exorcist.anims.stop('walk'); // parar animación
         }
 
         // Actualizar la profundidad de los personajes
@@ -1135,6 +1091,21 @@ class GameOnlineScene extends Phaser.Scene {
         this.visionAreaDe.setPosition(this.demon.x, this.demon.y)
 
         if (this.crucifijoObtenido) this.aura.setPosition(this.exorcist.x, this.exorcist.y)
+    }
+
+    /**
+     * Sends a message to the server via WebSocket.
+     * @param {string} type Message type
+     * @param {object|null} [data=null] Optional message data
+     */
+    sendMessage(type, data = null) {
+        if (this.socket.readyState === WebSocket.OPEN) {
+            if (data) {
+                this.socket.send(`${type}${JSON.stringify(data)}`);
+            } else {
+                this.socket.send(type);
+            }
+        }
     }
 
     /**
@@ -1162,7 +1133,7 @@ class GameOnlineScene extends Phaser.Scene {
                 case MSG_TYPES.CANDLES: // type 'c'
                     this.handleCandleSpawn(data);
                     break;
-                case MSG_TYPES.COLLECT:
+                case MSG_TYPES.COLLECT: // type 'v'
                     this.handleCandleCollection(data);
                     break;
                 case MSG_TYPES.TIME:
@@ -1179,23 +1150,21 @@ class GameOnlineScene extends Phaser.Scene {
         };
     }
 
-    handleInit(data){
+    handleInit(data) {
         console.log(data)
     }
 
     // type 'c'
     handleCandleSpawn(data) {
-        console.log(data)
         data.forEach(candleData => {
             this.createCandle(candleData[0], candleData[1], candleData[2])
         })
+        // Detectar colisiones con velas
+        this.physics.add.overlap(this.exorcist, this.candles, this.collectCandle, null, this);
     }
-
     createCandle(id, x, y) {
         // Crear el sprite de la vela
         const candle = this.candles.create(x, y, 'candle');
-
-        console.log("candle created: " + id + " " + x + " " + y)
 
         // Asignar un ID al sprite
         candle.setData('id', id);
@@ -1204,7 +1173,20 @@ class GameOnlineScene extends Phaser.Scene {
             .setCollideWorldBounds(true)
             .setImmovable(true); // Evitar que se mueva por colisiones
         candle.body.setAllowGravity(false); // Desactiva la gravedad
+    }
 
-        //NOTA: alomejor activar aquí la colisión
+    // type 'v'
+    handleCandleCollection(data) {
+        this.updateScore(data[0], data[1])
+    }
+    updateScore(id, score) {
+        this.candleCount = score
+        this.candles.getChildren().forEach(candle => {
+            if (candle.getData('id') == id) {
+                candle.destroy(); // Eliminar la vela del mapa
+            }
+        });
+        this.candleText.setText(`Candles: ${this.candleCount}`); // Actualizar el texto
+        this.candleIcon.setVisible(true); // Mostrar el icono
     }
 }
