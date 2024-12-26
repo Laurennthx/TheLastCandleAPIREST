@@ -152,16 +152,19 @@ class GameOnlineScene extends Phaser.Scene {
         ritual1.displayWidth = 473
         ritual1.displayHeight = 473
         ritual1.alpha = 0
+        ritual1.setData('id', 1)
 
         const ritual2 = this.grupoRituales.create(8540, 14048, 'block').setOrigin(0, 0).setImmovable(true)
         ritual2.displayWidth = 473
         ritual2.displayHeight = 473
         ritual2.alpha = 0
+        ritual2.setData('id', 2)
 
         const ritual3 = this.grupoRituales.create(4679, 2332, 'block').setOrigin(0, 0).setImmovable(true)
         ritual3.displayWidth = 473
         ritual3.displayHeight = 473
         ritual3.alpha = 0
+        ritual3.setData('id', 3)
 
         this.rituals = [ritual1, ritual2, ritual3]; // Lista de colliders de rituales
 
@@ -776,14 +779,12 @@ class GameOnlineScene extends Phaser.Scene {
     collectCandle(exorcist, candle) {
         if (!this.isPaused && Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
             this.sound.play("pickUpCandle"); // Reproducir sonido al recoger la vela
-            var candleId = candle.data.get('id'); // Obtener el id
+            var candleId = candle.getData('id'); // Obtener el id
             // Enviar la vela recogida al otro jugador
-            this.sendMessage(MSG_TYPES.COLLECT, candleId)
+            this.sendMessage(MSG_TYPES.COLLECT, candleId)   // type 'v'
         }
     }
 
-    // #region RITUALES
-    // COMPLETAR UN RITUAL
     // Método para colocar una vela en un ritual
     placeCandle(exorcist, ritualCollider) {
         if (!this.isPaused && Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
@@ -791,29 +792,9 @@ class GameOnlineScene extends Phaser.Scene {
             if (this.candleCount > 0) {
                 this.sound.play("match");
                 this.sound.play("LightCandle");
-                // Obtener las coordenadas centrales del ritualCollider
-                const bounds = ritualCollider.getBounds();
-                const candle = this.add.sprite(
-                    bounds.centerX - 1, // Coordenada X central ajustada
-                    bounds.centerY - 7, // Coordenada Y central ajustada
-                    'candleOn' // Textura de la vela
-                ).setScale(0.013); // Ajustar el tamaño si es necesario
-                this.marcoCamera.ignore(candle)
-
-                // Reducir el número de velas disponibles
-                this.candleCount--;
-                this.candleText.setText(`Candles: ${this.candleCount}`); // Actualizar el texto
-
-                // Incrementar el contador de rituales
-                this.ritualCount++;
-                this.ritualText.setText(`Completed Rituals: ${this.ritualCount}`); // Actualizar el texto de rituales
-                this.ritualIcon.setVisible(true); // Mostrar el icono
-
-                // Desactivar el ritualCollider para evitar múltiples activaciones
-                ritualCollider.active = false; // Desactiva el collider para futuras colisiones
-
-                // Llama al método para verificar rituales
-                this.checkCompletedRituals();
+                const ritualId = ritualCollider.getData('id')
+                // Enviar mensaje al servidor
+                this.sendMessage(MSG_TYPES.PLACE, ritualId) // type 'l'
             }
         }
     }
@@ -1136,6 +1117,9 @@ class GameOnlineScene extends Phaser.Scene {
                 case MSG_TYPES.COLLECT: // type 'v'
                     this.handleCandleCollection(data);
                     break;
+                case MSG_TYPES.PLACE: // type 'l'
+                    this.handlePlaceCandle(data);
+                    break;
                 case MSG_TYPES.TIME:
                     this.handleTime(data);
                     break;
@@ -1173,20 +1157,49 @@ class GameOnlineScene extends Phaser.Scene {
             .setCollideWorldBounds(true)
             .setImmovable(true); // Evitar que se mueva por colisiones
         candle.body.setAllowGravity(false); // Desactiva la gravedad
+        this.marcoCamera.ignore(candle)
     }
 
     // type 'v'
     handleCandleCollection(data) {
-        this.updateScore(data[0], data[1])
-    }
-    updateScore(id, score) {
-        this.candleCount = score
+        const id = data
+        this.candleCount++
         this.candles.getChildren().forEach(candle => {
             if (candle.getData('id') == id) {
+                
                 candle.destroy(); // Eliminar la vela del mapa
             }
         });
         this.candleText.setText(`Candles: ${this.candleCount}`); // Actualizar el texto
         this.candleIcon.setVisible(true); // Mostrar el icono
+    }
+
+    // type 'l'
+    handlePlaceCandle(data) {
+        const ritual = this.rituals[data - 1]
+
+        // Obtener las coordenadas centrales del ritualCollider
+        const bounds = ritual.getBounds();
+        const candle = this.add.sprite(
+            bounds.centerX - 1, // Coordenada X central ajustada
+            bounds.centerY - 7, // Coordenada Y central ajustada
+            'candleOn' // Textura de la vela
+        ).setScale(0.013); // Ajustar el tamaño si es necesario
+        this.marcoCamera.ignore(candle)
+
+        // Reducir el número de velas disponibles
+        this.candleCount--
+        this.candleText.setText(`Candles: ${this.candleCount}`); // Actualizar el texto
+
+        // Incrementar el contador de rituales
+        this.ritualCount++;
+        this.ritualText.setText(`Completed Rituals: ${this.ritualCount}`); // Actualizar el texto de rituales
+        this.ritualIcon.setVisible(true); // Mostrar el icono
+
+        // Desactivar el ritualCollider para evitar múltiples activaciones
+        ritual.destroy()
+
+        // Llama al método para verificar rituales
+        this.checkCompletedRituals();
     }
 }

@@ -41,10 +41,24 @@ The protocol uses specific message types to communicate between the client and s
   - `candleId`: ID of the candle obtained.
 - **Data Format (Server to Clients):**
   ```json
-  [candleId, score]
+  <candleId>
   ```
   - `candleId`: Identifier for the collected candle.
-  - `score`: Updated score of the candles the exorcist has collected.
+
+### 3. **Place Candle on Ritual (`l`):**
+
+- **Type:** `l`
+- **Description:** Sent by a client to indicate a ritual has been used, or by the server to remove the ritual and update the scores.
+- **Data Format (Client to Server):**
+  ```json
+  <ritualId>
+  ```
+  - `ritualId`: ID of the ritual that's being used.
+- **Data Format (Server to Clients):**
+  ```json
+  <ritualId>
+  ```
+  - `ritualId`: Identifier for the used ritual.
 
 
 

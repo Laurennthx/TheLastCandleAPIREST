@@ -825,8 +825,8 @@ class GameScene extends Phaser.Scene {
                 this.ritualText.setText(`Completed Rituals: ${this.ritualCount}`); // Actualizar el texto de rituales
                 this.ritualIcon.setVisible(true); // Mostrar el icono
 
-                // Desactivar el ritualCollider para evitar múltiples activaciones
-                ritualCollider.active = false; // Desactiva el collider para futuras colisiones
+                // Eliminar el ritualCollider para evitar múltiples activaciones
+                ritualCollider.destroy()
 
                 // Llama al método para verificar rituales
                 this.checkCompletedRituals();

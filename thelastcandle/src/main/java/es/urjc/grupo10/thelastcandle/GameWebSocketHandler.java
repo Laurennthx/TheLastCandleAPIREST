@@ -43,15 +43,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      * tasks.
      */
     private static class Game {
-        int init; // Jugadores seleccionan personaje
         int ready; // Jugadores seleccionan personaje
 
         Player player1;
         Player player2;
-        int score;
 
         List<Candle> candles; // Velas de la partida
         int nCandles;
+        List<Integer> rituals; // Velas de la partida
 
         int timeForCrucifix = 10; // Tiempo para que salga el crucifijo
         ScheduledFuture<?> timerTask;
@@ -60,8 +59,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             this.ready = 0;
             this.player1 = player1;
             this.player2 = player2;
-            this.score = 0;
             this.nCandles = 5;
+            this.rituals =  new ArrayList<>(Arrays.asList(0, 0, 0));
         }
     }
 
@@ -214,9 +213,16 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     Integer candleRemoved = mapper.readValue(data, Integer.class);
                     if (game.candles.get(candleRemoved - 1).id != -1) { // NOTA: es necesario este if?
                         game.candles.get(candleRemoved - 1).id = -1;
-                        List<Integer> scoreData = Arrays.asList(candleRemoved, ++game.score);
-                        sendToPlayer(currentPlayer, "v", scoreData);
-                        sendToPlayer(otherPlayer, "v", scoreData);
+                        sendToPlayer(currentPlayer, "v", candleRemoved);
+                        sendToPlayer(otherPlayer, "v", candleRemoved);
+                    }
+                    break;
+                case 'l': // Colocar vela en ritual
+                    Integer ritualRemoved = mapper.readValue(data, Integer.class);
+                    if (game.rituals.get(ritualRemoved - 1) != -1) { // Si no tienen el valor -1 es que todavía no han sido usados
+                        game.rituals.set(ritualRemoved - 1, -1);
+                        sendToPlayer(currentPlayer, "l", ritualRemoved);
+                        sendToPlayer(otherPlayer, "l", ritualRemoved);
                     }
                     break;
                 case 'r': // Un jugador está ready para EMPEZAR la partida
