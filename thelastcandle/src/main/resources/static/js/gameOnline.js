@@ -5,12 +5,13 @@
 const MSG_TYPES = {
     INIT: 'i',        // Initialize game state
     READY: 'r',        // Initialize game state
-    POS: 'p',         // Update player position
-    CANDLES: 'c',      // Spawn candles
-    COLLECT: 'v',     // Candle collection event
-    PLACE: 'l',         // Place a candle
-    GENERATE: 'g',         // Generate crucifix pos
-    CRUCIFIX: 'x',         // Collect crucifix
+    POS: 'p',         // Update player position     LISTO
+    CANDLES: 'c',      // Spawn candles             LISTO
+    COLLECT: 'v',     // Candle collection event    LISTO
+    PLACE: 'l',         // Place a candle           LISTO
+    GENERATE: 'g',         // Generate crucifix pos LISTO
+    CRUCIFIX: 'x',         // Collect crucifix      LISTO
+    LIGHT: 't',         // Activate lights      
     OVER: 'o'         // End game event
 };
 
@@ -827,81 +828,80 @@ class GameOnlineScene extends Phaser.Scene {
 
     // USAR INTERRUPTOR
     cambiarInterruptores(interruptor) {
-        if (!this.isPaused && interruptor != undefined) {
-            if (this.playerId == 1) {
-                if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
-                    if (!this.lucesEncendidas) {
-                        this.encenderLuces()
+        if (this.cooldownLuces == false) {
+            if (!this.isPaused && interruptor != undefined) {
+                if (this.playerId == 1) {
+                    if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+                        if (!this.lucesEncendidas) {
+                            // Notificar a ambos jugadores para que ejecuten la función
+                            this.sendMessage(MSG_TYPES.LIGHT, true)     // Encender luces (desde el punto de vista del exorcista)
+                        }
+                    }
+                }
+                if (this.playerId == 2) {
+                    if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+                        if (this.lucesEncendidas) {
+                            // Notificar a ambos jugadores para que ejecuten la función
+                            this.sendMessage(MSG_TYPES.LIGHT, false)    // Apagara luces (desde el punto de vista del exorcista)
+                        }
                     }
                 }
             }
-            if (this.playerId == 2) {
-                if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
-                    if (this.lucesEncendidas) {
-                        this.apagarLuces()
-                    }
-                }
-            }
-
         }
     }
 
     // El demonio llama a esta función para apagar las luces
     apagarLuces() {
-        if (this.cooldownLuces == false) {
-            this.sound.play('switch');
-            this.cooldownLuces = true
-            this.visionAreaEx.setScale(this.vScaleSmall, this.vScaleSmall)
-            this.visionAreaDe.setScale(this.vScaleBig, this.vScaleBig)
+        this.sound.play('switch');
+        this.cooldownLuces = true
+        this.visionAreaEx.setScale(this.vScaleSmall, this.vScaleSmall)
+        this.visionAreaDe.setScale(this.vScaleBig, this.vScaleBig)
 
-            this.interruptoresOn.children.iterate(function (child) {
-                child.alpha = 0;
-            });
-            this.interruptoresOff.children.iterate(function (child) {
-                child.alpha = 1;
-            });
+        this.interruptoresOn.children.iterate(function (child) {
+            child.alpha = 0;
+        });
+        this.interruptoresOff.children.iterate(function (child) {
+            child.alpha = 1;
+        });
 
-            this.lucesDe.forEach(luz => {
-                luz.setRadius(0)
+        this.lucesDe.forEach(luz => {
+            luz.setRadius(0)
+        })
+
+        this.time.delayedCall(this.cd, () => { // Al terminar el cooldown se enciende un indicador para el exorcista
+            this.lucesEncendidas = false
+            this.lucesEx.forEach(luz => {
+                luz.setRadius(this.rLight)
             })
-
-            this.time.delayedCall(this.cd, () => { // Al terminar el cooldown se enciende un indicador para el exorcista
-                this.lucesEncendidas = false
-                this.lucesEx.forEach(luz => {
-                    luz.setRadius(this.rLight)
-                })
-                this.cooldownLuces = false
-            })
-        }
+            this.cooldownLuces = false
+        })
     }
 
     // El exorcista llama a esta función para encender las luces
     encenderLuces() {
-        if (this.cooldownLuces == false) {
-            this.sound.play('switch');
-            this.cooldownLuces = true
-            this.visionAreaEx.setScale(this.vScaleBig, this.vScaleBig)
-            this.visionAreaDe.setScale(this.vScaleSmall, this.vScaleSmall)
+        this.sound.play('switch');
+        this.cooldownLuces = true
+        this.visionAreaEx.setScale(this.vScaleBig, this.vScaleBig)
+        this.visionAreaDe.setScale(this.vScaleSmall, this.vScaleSmall)
 
-            this.interruptoresOn.children.iterate(function (child) {
-                child.alpha = 1;
-            });
-            this.interruptoresOff.children.iterate(function (child) {
-                child.alpha = 0;
-            });
+        this.interruptoresOn.children.iterate(function (child) {
+            child.alpha = 1;
+        });
+        this.interruptoresOff.children.iterate(function (child) {
+            child.alpha = 0;
+        });
 
-            this.lucesEx.forEach(luz => {
-                luz.setRadius(0)
+        this.lucesEx.forEach(luz => {
+            luz.setRadius(0)
+        })
+
+        this.time.delayedCall(this.cd, () => { // Al terminar el cooldown se enciende un indicador para el demonio
+            this.lucesEncendidas = true
+            this.lucesDe.forEach(luz => {
+                luz.setRadius(this.rLight)
             })
-
-            this.time.delayedCall(this.cd, () => { // Al terminar el cooldown se enciende un indicador para el demonio
-                this.lucesEncendidas = true
-                this.lucesDe.forEach(luz => {
-                    luz.setRadius(this.rLight)
-                })
-                this.cooldownLuces = false
-            })
-        }
+            this.cooldownLuces = false
+        })
     }
 
     ponerLuces(posiciones, color) {
@@ -1193,6 +1193,9 @@ class GameOnlineScene extends Phaser.Scene {
                 case MSG_TYPES.CRUCIFIX: // type 'x'
                     this.handleCrucifixCollection(data);
                     break;
+                case MSG_TYPES.LIGHT: // type 't'
+                    this.handleLightSwitch(data);
+                    break;
             }
         };
 
@@ -1266,7 +1269,7 @@ class GameOnlineScene extends Phaser.Scene {
                 } else if (data[0] === 2) {
                     this.otherPlayer.anims.stop('demonWalk', true);
                 }
-            }, this.POSITION_UPDATE_INTERVAL * 2); 
+            }, this.POSITION_UPDATE_INTERVAL * 2);
         }
     }
 
@@ -1351,6 +1354,15 @@ class GameOnlineScene extends Phaser.Scene {
         this.crucifijoObtenido = true
         this.crucifixText.setVisible(true);
         this.sound.play("crucifix"); // Reproducir sonido al recoger la vela
+    }
+
+    handleLightSwitch(data) {
+        if (data == true) {
+            this.encenderLuces()
+        }
+        else if (data == false) {
+            this.apagarLuces()
+        }
     }
 
 }

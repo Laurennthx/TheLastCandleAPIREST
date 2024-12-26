@@ -52,6 +52,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         int nCandles;
         List<Integer> rituals; // Velas de la partida
         Crucifix crucifix;
+        Boolean lightState;
 
         int timeForCrucifix = 10; // Tiempo para que salga el crucifijo
         ScheduledFuture<?> timerTask;
@@ -61,6 +62,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             this.player2 = player2;
             this.nCandles = 5;
             this.rituals = new ArrayList<>(Arrays.asList(0, 0, 0));
+            this.lightState = true;
         }
     }
 
@@ -194,9 +196,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
         // Create initial player data: [x, y, playerId]
         List<List<Object>> playersData = Arrays.asList(
-                Arrays.asList(game.player1.x, game.player1.y, game.player1.playerId), 
-                Arrays.asList(game.player2.x, game.player2.y, game.player2.playerId)
-        );
+                Arrays.asList(game.player1.x, game.player1.y, game.player1.playerId),
+                Arrays.asList(game.player2.x, game.player2.y, game.player2.playerId));
 
         // Send initial state to both players.
         sendToPlayer(game.player1, "i", Map.of("id", game.player1.playerId, "p", playersData));
@@ -206,6 +207,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     // #endregion
 
+    // #region MESSAGES
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         try {
@@ -257,6 +259,20 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                         sendToPlayer(otherPlayer, "x", null);
                     }
                     break;
+                case 't': // Interactuar con las luces
+                    Boolean desiredLights = Boolean.parseBoolean(data);
+                    if(desiredLights != game.lightState){
+                        game.lightState = desiredLights;
+                        if(desiredLights){
+                            sendToPlayer(currentPlayer, "t", true);
+                            sendToPlayer(otherPlayer, "t", true);
+                        }
+                        else{
+                            sendToPlayer(currentPlayer, "t", false);
+                            sendToPlayer(otherPlayer, "t", false);
+                        }
+                    }
+                    break;
                 case 'r': // Un jugador está ready
                     currentPlayer.ready++;
                     if (currentPlayer.ready == 1 && otherPlayer.ready == 1) {
@@ -270,9 +286,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     }
                     break;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        }catch(
+
+    IOException e)
+    {
+        e.printStackTrace();
+    }
     }
 
     /**
