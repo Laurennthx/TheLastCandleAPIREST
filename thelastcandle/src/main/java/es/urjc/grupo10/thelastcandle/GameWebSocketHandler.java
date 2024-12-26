@@ -31,9 +31,11 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         double x;
         double y;
         int playerId;
+        int ready;
 
         Player(WebSocketSession session) {
             this.session = session;
+            this.ready = 0;
         }
     }
 
@@ -43,8 +45,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      * tasks.
      */
     private static class Game {
-        int ready; // Jugadores seleccionan personaje
-
         Player player1;
         Player player2;
 
@@ -57,7 +57,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         ScheduledFuture<?> timerTask;
 
         Game(Player player1, Player player2) {
-            this.ready = 0;
             this.player1 = player1;
             this.player2 = player2;
             this.nCandles = 5;
@@ -148,9 +147,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                 Player player1 = players.get(session1.getId());
                 Player player2 = players.get(session2.getId());
 
-                // Initialize player positions and IDs
-                player1.playerId = 1;
-                player2.playerId = 2;
                 player1.x = 100; // Left side of screen
                 player1.y = 300; // Middle height
                 player2.x = 700; // Right side of screen
@@ -172,7 +168,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      * Message format 'p': Ids and positions of the candles to generate
      */
     private void gameInit(Game game) {
-
         // Generar las velas y enviarlas
         game.candles = generateCandles(game.nCandles);
         List<List<Object>> candlePositions = new ArrayList<>();
@@ -184,20 +179,28 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         sendToPlayer(game.player1, "c", candlePositions);
         sendToPlayer(game.player2, "c", candlePositions);
 
-        // Create initial player data: [x, y, playerId]
-        List<List<Object>> playersData = Arrays.asList(
-                Arrays.asList(game.player1.x, game.player1.y, 1), // Player 1: Exorcist
-                Arrays.asList(game.player2.x, game.player2.y, 2) // Player 2: Demon
-        );
-
-        // Send initial state to both players.
-        sendToPlayer(game.player1, "i", Map.of("id", 1, "p", playersData));
-        sendToPlayer(game.player2, "i", Map.of("id", 2, "p", playersData));
-
-        // Generar el crucifijo
+        // Generar la posición del crucifijo
         game.crucifix = generateCrucifix();
         sendToPlayer(game.player1, "g", Arrays.asList(game.crucifix.x, game.crucifix.y));
         sendToPlayer(game.player2, "g", Arrays.asList(game.crucifix.x, game.crucifix.y));
+
+        // Generar un valor aleatorio para asignar los IDs a los jugadores
+        // Player 1: exorcist. Player 2: demon.
+        int player1Id = random.nextInt(2) + 1; // Puede ser 1 o 2
+        int player2Id = (player1Id == 1) ? 2 : 1; // El ID del otro jugador será el contrario
+
+        game.player1.playerId = player1Id;
+        game.player2.playerId = player2Id;
+
+        // Create initial player data: [x, y, playerId]
+        List<List<Object>> playersData = Arrays.asList(
+                Arrays.asList(game.player1.x, game.player1.y, game.player1.playerId), 
+                Arrays.asList(game.player2.x, game.player2.y, game.player2.playerId)
+        );
+
+        // Send initial state to both players.
+        sendToPlayer(game.player1, "i", Map.of("id", game.player1.playerId, "p", playersData));
+        sendToPlayer(game.player2, "i", Map.of("id", game.player2.playerId, "p", playersData));
 
     }
 
@@ -209,8 +212,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
             Game game = games.get(session.getId());
 
-            if (game == null)
+            if (game == null) {
                 return;
+            }
 
             Player currentPlayer = players.get(session.getId());
             Player otherPlayer = game.player1 == currentPlayer ? game.player2 : game.player1;
@@ -245,6 +249,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                         sendToPlayer(currentPlayer, "l", ritualRemoved);
                         sendToPlayer(otherPlayer, "l", ritualRemoved);
                     }
+                    break;
                 case 'x': // Obtener crucifijo
                     if (game.crucifix.picked == false) {
                         game.crucifix.picked = true;
@@ -252,12 +257,16 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                         sendToPlayer(otherPlayer, "x", null);
                     }
                     break;
-                case 'r': // Un jugador está ready para EMPEZAR la partida
-                    if (++game.ready == 2) {
-                        // Comenzar el timer del crucifijo
-
-                        sendToPlayer(currentPlayer, "r", null);
-                        sendToPlayer(otherPlayer, "r", null);
+                case 'r': // Un jugador está ready
+                    currentPlayer.ready++;
+                    if (currentPlayer.ready == 1 && otherPlayer.ready == 1) {
+                        // Los dos jugadores han cargado la escena
+                        sendToPlayer(currentPlayer, "r", 1);
+                        sendToPlayer(otherPlayer, "r", 1);
+                    } else if (currentPlayer.ready == 2 && otherPlayer.ready == 2) {
+                        // Los dos jugadores están listos para comenzar
+                        sendToPlayer(currentPlayer, "r", 2);
+                        sendToPlayer(otherPlayer, "r", 2);
                     }
                     break;
             }

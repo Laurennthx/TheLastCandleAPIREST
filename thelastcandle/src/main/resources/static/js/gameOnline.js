@@ -11,7 +11,6 @@ const MSG_TYPES = {
     PLACE: 'l',         // Place a candle
     GENERATE: 'g',         // Generate crucifix pos
     CRUCIFIX: 'x',         // Collect crucifix
-    TIME: 't',        // Update game timer
     OVER: 'o'         // End game event
 };
 
@@ -22,10 +21,11 @@ class GameOnlineScene extends Phaser.Scene {
         this.ritualCount = 0; // Contador de rituales completados
 
         // Game variables
-        /** @type {Phaser.GameObjects.GameObject} Player 1, controlled character */
-        this.player = null;
+        /** @type {Number} Player 1, controlled character. Only the id */
+        this.playerId = null;
 
-        /** @type {Phaser.GameObjects.GameObject} Player 2, opponent's character */
+        // Game variables
+        /** @type {Object} Player 2, other character */
         this.otherPlayer = null;
 
         /** @type {WebSocket} WebSocket for server communication */
@@ -35,11 +35,15 @@ class GameOnlineScene extends Phaser.Scene {
         /** @type {{x: number, y: number}} Last sent position */
         this.lastSentPosition = { x: 0, y: 0 };
 
+        // Network optimization variables
+        /** @type {{x: number, y: number}} Last sent position */
+        this.lastSeenPositionOther = { x: 0, y: 0 };
+
         /** @type {number} Last update timestamp */
         this.lastUpdateTime = 0;
 
         /** @type {number} Interval for position updates in milliseconds */
-        this.POSITION_UPDATE_INTERVAL = 50;
+        this.POSITION_UPDATE_INTERVAL = 30;
 
         /** @type {number} Minimum movement threshold for sending position updates */
         this.POSITION_THRESHOLD = 2;
@@ -83,8 +87,7 @@ class GameOnlineScene extends Phaser.Scene {
 
         // Connect to WebSocket
         this.socket = new WebSocket("ws://" + location.host + "/ws");
-        // Setup WebSocket event handlers
-        this.setupWebSocket();
+
 
         // MUNDO
         const zoomCamara = 4
@@ -97,8 +100,6 @@ class GameOnlineScene extends Phaser.Scene {
         this.crucifix = this.physics.add.sprite(0, 0, 'crucifix').setOrigin(0, 0)    // Iniciar el crucifijo en cualquier parte
         this.crucifixX = 0
         this.crucifixY = 0
-
-        
 
         // MOVIMIENTO
         this.lastKeyExorcist
@@ -115,7 +116,7 @@ class GameOnlineScene extends Phaser.Scene {
             [1906, 6976], [4440, 5451], [4734, 3677]]
 
 
-        // #region COLLIDERS
+        // #region MAPA
         // Ejemplo para que los personajes no puedan atravesar paredes
         this.walls = this.physics.add.group()
         const collider1 = this.createCollider(1737, 876, 6804, 144)
@@ -287,15 +288,6 @@ class GameOnlineScene extends Phaser.Scene {
         this.killDemon.setScale(0.4, 0.4);
         this.killDemon.setVisible(false); // Inicialmente oculto, visible solo cuando sea necesario
 
-        // Verificar en update si se pulsa E
-        this.input.keyboard.on('keydown-E', () => {
-            if (this.killDemon.visible) { // Solo si el botón es visible
-                this.sound.play("select");
-                this.scene.stop("gameScene");
-                this.scene.sleep("ChatScene");
-                this.scene.start("ExorcistWinsScene");
-            }
-        });
 
         // MATAR AL EXORCISTA
         // Botón para matar al exorcista
@@ -306,6 +298,18 @@ class GameOnlineScene extends Phaser.Scene {
             });
         this.killExorcist.setScale(0.4, 0.4);
         this.killExorcist.setVisible(false); // Inicialmente oculto
+
+        // #region CONTROLES
+
+        // Verificar en update si se pulsa E
+        this.input.keyboard.on('keydown-E', () => {
+            if (this.killDemon.visible) { // Solo si el botón es visible
+                this.sound.play("select");
+                this.scene.stop("gameScene");
+                this.scene.sleep("ChatScene");
+                this.scene.start("ExorcistWinsScene");
+            }
+        });
 
         // Verificar en update si se pulsa ENTER
         this.input.keyboard.on('keydown-ENTER', () => {
@@ -320,11 +324,7 @@ class GameOnlineScene extends Phaser.Scene {
         });
 
 
-        this.cursors = this.input.keyboard.createCursorKeys();
-        // Configurar teclas - pulsar E para recoger vela - pulsar para toggle de los interruptores
-        this.interactKeyEx = this.input.keyboard.addKey('E');
-        this.interactKeyDe = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
-
+        // #region COLLIDERS
 
         // Detectar colisiones con rituales
         this.physics.add.overlap(this.exorcist, this.grupoRituales, this.placeCandle, null, this);
@@ -334,16 +334,12 @@ class GameOnlineScene extends Phaser.Scene {
         this.physics.add.overlap(this.exorcist, this.interruptoresOn, this.cambiarInterruptores, null, this);
         this.physics.add.overlap(this.demon, this.interruptoresOn, this.cambiarInterruptores, null, this);
         // Collider del exorcista con el demonio, se podría quitar 
-        this.physics.add.collider(this.exorcist, this.demon, this.hitExorcist, null, this); // LLama a la función "hitExorcist" cuando colisionan
+        this.physics.add.overlap(this.exorcist, this.demon, this.hitExorcist, null, this); // LLama a la función "hitExorcist" cuando colisionan
         // Activar colisión entre las paredes y el exorcista
         this.physics.add.collider(this.exorcist, this.walls)
         // Activar colisión entre las paredes y el exorcista
         this.physics.add.collider(this.demon, this.walls)
 
-
-        // CONTROLES PERSONAJES
-        this.setupPaddleControllersExorcist();
-        this.setupPaddleControllersDemon();
 
         // DIVIDER PANTALLA
         // Añadir la imagen del marco en el centro de la pantalla
@@ -464,17 +460,7 @@ class GameOnlineScene extends Phaser.Scene {
         })
         // La tercera cámara debe ignorar todos los sprites XD
         this.marcoCamera.ignore([...this.muebles, this.exorcist, this.demon, this.bgContainer, this.candles, this.visionAreaEx, this.visionAreaDe, background])
-
         // #endregion
-
-        // Generar el crucifijo tras 6 segundos de partida
-        this.time.addEvent({
-            delay: 3000,          // Retraso en milisegundos (6000 ms = 6 segundos)
-            callback: this.generateCrucifix,   // Función a llamar después del retraso
-            callbackScope: this   // Contexto (scope) de la función, generalmente `this` para acceder a la escena
-        });
-
-
 
         // #region MENU DE PAUSA
         // Fondo del menú de pausa
@@ -599,16 +585,25 @@ class GameOnlineScene extends Phaser.Scene {
 
 
 
+        // Setup WebSocket event handlers
+        this.setupWebSocket();
+
         // this.scene.pause()
         // console.log("Escena pausada")
         //this.add.image(this.scale.width / 2, this.scale.height / 2, 'LoadingBG').setOrigin(0.5).setDisplaySize(this.scale.width, this.scale.height);
         //this.scene.launch("ChoosingCharacterScene")
+
+        //#region FIN CREATE
     }
 
     toggleInteractKeys(state) {
         if (state) {
-            this.interactKeyEx = this.input.keyboard.addKey('E');
-            this.interactKeyDe = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
+            if (this.playerId == 1) {
+                this.interactKey = this.input.keyboard.addKey('E');
+            }
+            else if (this.playerId == 2) {
+                this.interactKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
+            }
         }
         else {
             this.input.keyboard.removeCapture(['E', Phaser.Input.Keyboard.KeyCodes.ENTER]);
@@ -751,7 +746,18 @@ class GameOnlineScene extends Phaser.Scene {
         return collider
     }
 
-    generateCrucifix(){
+    startCrucifixTimer() {
+        // Generar el crucifijo tras unos segundos
+        this.time.addEvent({
+            delay: 3000,          // Retraso en milisegundos (6000 ms = 6 segundos)
+            callback: this.generateCrucifix,   // Función a llamar después del retraso
+            callbackScope: this   // Contexto (scope) de la función, generalmente `this` para acceder a la escena
+        });
+    }
+
+
+
+    generateCrucifix() {
         const x = this.crucifixX
         const y = this.crucifixY
         this.crucifix.visible = true
@@ -770,13 +776,13 @@ class GameOnlineScene extends Phaser.Scene {
     }
 
     collectCrucifix() {
-        this.sendMessage(MSG_TYPES.CRUCIFIX, null)
+        this.sendMessage(MSG_TYPES.CRUCIFIX)
     }
 
     // #region VELAS
     // RECOGER VELA
     collectCandle(exorcist, candle) {
-        if (!this.isPaused && Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
+        if (!this.isPaused && this.playerId == 1 && Phaser.Input.Keyboard.JustDown(this.interactKey)) {
             this.sound.play("pickUpCandle"); // Reproducir sonido al recoger la vela
             var candleId = candle.getData('id'); // Obtener el id
             // Enviar la vela recogida al otro jugador
@@ -786,7 +792,7 @@ class GameOnlineScene extends Phaser.Scene {
 
     // Método para colocar una vela en un ritual
     placeCandle(exorcist, ritualCollider) {
-        if (!this.isPaused && Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
+        if (!this.isPaused && this.playerId == 1 && Phaser.Input.Keyboard.JustDown(this.interactKey)) {
             // Verificar si hay velas disponibles
             if (this.candleCount > 0) {
                 this.sound.play("match");
@@ -820,17 +826,17 @@ class GameOnlineScene extends Phaser.Scene {
     }
 
     // USAR INTERRUPTOR
-    cambiarInterruptores(player, interruptor) {
+    cambiarInterruptores(interruptor) {
         if (!this.isPaused && interruptor != undefined) {
-            if (player == this.exorcist) {
-                if (Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
+            if (this.playerId == 1) {
+                if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
                     if (!this.lucesEncendidas) {
                         this.encenderLuces()
                     }
                 }
             }
-            if (player == this.demon) {
-                if (Phaser.Input.Keyboard.JustDown(this.interactKeyDe)) {
+            if (this.playerId == 2) {
+                if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
                     if (this.lucesEncendidas) {
                         this.apagarLuces()
                     }
@@ -907,6 +913,25 @@ class GameOnlineScene extends Phaser.Scene {
     }
 
     // #region CONTROLES
+
+    iniciarControles() {
+        // CONTROLES PERSONAJES
+        if (this.playerId == 1) {
+            this.setupPaddleControllersExorcist();
+        }
+        else if (this.playerId == 2) {
+            this.setupPaddleControllersDemon();
+        }
+
+        // Configurar teclas - pulsar E para recoger vela - pulsar para toggle de los interruptores
+        if (this.playerId == 1) {
+            this.interactKey = this.input.keyboard.addKey('E');
+        }
+        else if (this.playerId == 2) {
+            this.interactKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
+        }
+    }
+
     setupPaddleControllersDemon() {
         // Key down
         this.input.keyboard.on('keydown-LEFT', () => {
@@ -1041,26 +1066,29 @@ class GameOnlineScene extends Phaser.Scene {
 
     // #region UPDATE
     update(time, delta) {
-        this.demon.setVelocity(0, 0)
-        for (let i = 0; i < this.keysPressedDe.length; i++) {
-            if (this.keysPressedDe[i][1] == true) {
-                this.demon.setVelocity(this.keysPressedDe[i][0][0] * this.speedDe * this.velocidadReducida, this.keysPressedDe[i][0][1] * this.speedDe * this.velocidadReducida)
-                if (this.lastKeyDemon == i) break
+        if (this.playerId == 1) {
+            this.exorcist.setVelocity(0, 0)
+            for (let i = 0; i < this.keysPressedEx.length; i++) {
+                if (this.keysPressedEx[i][1] == true) {
+                    this.exorcist.setVelocity(this.keysPressedEx[i][0][0] * this.speedEx, this.keysPressedEx[i][0][1] * this.speedEx)
+                    if (this.lastKeyExorcist == i) break
+                }
+            }
+            if (this.exorcist.body.velocity.x == 0 && this.exorcist.body.velocity.y == 0) {
+                this.exorcist.anims.stop('walk'); // parar animación
             }
         }
-        if (this.demon.body.velocity.x == 0 && this.demon.body.velocity.y == 0) {
-            this.demon.anims.stop('demonWalk'); // parar animación
-        }
-
-        this.exorcist.setVelocity(0, 0)
-        for (let i = 0; i < this.keysPressedEx.length; i++) {
-            if (this.keysPressedEx[i][1] == true) {
-                this.exorcist.setVelocity(this.keysPressedEx[i][0][0] * this.speedEx, this.keysPressedEx[i][0][1] * this.speedEx)
-                if (this.lastKeyExorcist == i) break
+        else if (this.playerId == 2) {
+            this.demon.setVelocity(0, 0)
+            for (let i = 0; i < this.keysPressedDe.length; i++) {
+                if (this.keysPressedDe[i][1] == true) {
+                    this.demon.setVelocity(this.keysPressedDe[i][0][0] * this.speedDe * this.velocidadReducida, this.keysPressedDe[i][0][1] * this.speedDe * this.velocidadReducida)
+                    if (this.lastKeyDemon == i) break
+                }
             }
-        }
-        if (this.exorcist.body.velocity.x == 0 && this.exorcist.body.velocity.y == 0) {
-            this.exorcist.anims.stop('walk'); // parar animación
+            if (this.demon.body.velocity.x == 0 && this.demon.body.velocity.y == 0) {
+                this.demon.anims.stop('demonWalk'); // parar animación
+            }
         }
 
         // Actualizar la profundidad de los personajes
@@ -1071,8 +1099,49 @@ class GameOnlineScene extends Phaser.Scene {
         this.visionAreaDe.setPosition(this.demon.x, this.demon.y)
 
         if (this.crucifijoObtenido) this.aura.setPosition(this.exorcist.x, this.exorcist.y)
+
+        this.handlePositionUpdates();
     }
 
+    /**
+     * Sends player position updates to the server based on movement thresholds.
+     */
+    handlePositionUpdates() {
+        const currentTime = Date.now();
+        var posX, posY
+        if (this.playerId == 1) {
+            posX = this.exorcist.x
+            posY = this.exorcist.y
+        }
+        else if (this.playerId == 2) {
+            posX = this.demon.x
+            posY = this.demon.y
+        }
+        if (currentTime - this.lastUpdateTime >= this.POSITION_UPDATE_INTERVAL) {
+            const dx = Math.abs(posX - this.lastSentPosition.x);
+            const dy = Math.abs(posY - this.lastSentPosition.y);
+
+
+            if (dx > this.POSITION_THRESHOLD || dy > this.POSITION_THRESHOLD) {
+                this.sendPosition(posX, posY);
+                this.lastUpdateTime = currentTime;
+                this.lastSentPosition = { x: posX, y: posY };
+            }
+        }
+    }
+
+    /**
+     * Sends the player's position to the server. 
+     */
+    sendPosition(x, y) {
+        this.sendMessage(MSG_TYPES.POS, [   // type 'p'
+            Math.round(x),
+            Math.round(y)
+        ]);
+    }
+
+
+    // #region MESSAGES
     /**
      * Sends a message to the server via WebSocket.
      * @param {string} type Message type
@@ -1099,15 +1168,14 @@ class GameOnlineScene extends Phaser.Scene {
         this.socket.onmessage = (event) => {
             const type = event.data.charAt(0);
             const data = event.data.length > 1 ? JSON.parse(event.data.substring(1)) : null;
-
             switch (type) {
                 case MSG_TYPES.INIT:
-                    this.handleInit(data);
+                    this.handleInit(data);  // type 'i'
                     break;
                 case MSG_TYPES.READY:
-                    this.handleReady(data);
+                    this.handleReady(data);  // type 'r'
                     break;
-                case MSG_TYPES.POS:
+                case MSG_TYPES.POS: //type 'p'
                     this.handlePosition(data);
                     break;
                 case MSG_TYPES.CANDLES: // type 'c'
@@ -1125,12 +1193,6 @@ class GameOnlineScene extends Phaser.Scene {
                 case MSG_TYPES.CRUCIFIX: // type 'x'
                     this.handleCrucifixCollection(data);
                     break;
-                case MSG_TYPES.TIME:
-                    this.handleTime(data);
-                    break;
-                case MSG_TYPES.OVER:
-                    this.handleGameOver(data);
-                    break;
             }
         };
 
@@ -1139,9 +1201,73 @@ class GameOnlineScene extends Phaser.Scene {
         };
     }
 
-    // Definir si este jugador es exorcista o demonio
+    // type 'i'. Definir si este jugador es exorcista o demonio. 
     handleInit(data) {
-        console.log(data)
+        this.playerId = data.id   // 1: exorcista. 2: demonio
+        this.iniciarControles()
+        if (this.playerId == 1) {
+            this.otherPlayer = this.demon
+        }
+        else if (this.playerId == 2) {
+            this.otherPlayer = this.exorcist
+        }
+        console.log("Jugador: " + this.playerId)
+        this.sendMessage(MSG_TYPES.READY)   // Enviar la primera señal de ready
+    }
+
+    // type 'r'
+    handleReady(data) {
+        if (data == 1) {
+            this.startCrucifixTimer()
+        }
+        else if (data == 2) {
+            // NOTA: aquí debería ir el starCrucifixTime, porque
+            // significa que los jugadores están listos para comenzar la partida
+        }
+    }
+
+    // type 'p'
+    /**
+     * Updates the position of the opponent player.
+     * @param {Array} data Position data [playerId, x, y]
+     */
+    handlePosition(data) {
+        if (data[0] !== this.playerId && this.otherPlayer) {
+            var x = data[1]
+            var y = data[2]
+            this.otherPlayer.dx = x - this.otherPlayer.x
+            this.otherPlayer.dy = y - this.otherPlayer.y
+            if (this.otherPlayer.dx < 0) {
+                this.otherPlayer.flipX = true;
+            }
+            else if (this.otherPlayer.dx > 0) {
+                this.otherPlayer.flipX = false;
+            }
+            if (this.otherPlayer.dx + this.otherPlayer.dy != 0) {
+                if (data[0] == 1) {
+                    this.otherPlayer.anims.play('walk', true); // Reproducir animación
+                }
+                else if (data[0] == 2) {
+                    this.otherPlayer.anims.play('demonWalk', true); // Reproducir animación
+                }
+            }
+
+            this.otherPlayer.x = x;
+            this.otherPlayer.y = y;
+
+            // Si pasa un tiempo sin recibir una actualización, se pausa la animación
+            if (this.inactivityTimeout) {
+                clearTimeout(this.inactivityTimeout);
+            }
+            this.inactivityTimeout = setTimeout(() => {
+                // Detener la animación si no hay nuevas actualizaciones
+                if (data[0] === 1) {
+                    this.otherPlayer.anims.stop('walk', true);
+                } else if (data[0] === 2) {
+                    this.otherPlayer.anims.stop('demonWalk', true);
+                }
+            }, this.POSITION_UPDATE_INTERVAL * 2); 
+        }
     }
 
     // type 'c'
@@ -1172,7 +1298,7 @@ class GameOnlineScene extends Phaser.Scene {
         this.candleCount++
         this.candles.getChildren().forEach(candle => {
             if (candle.getData('id') == id) {
-                
+
                 candle.destroy(); // Eliminar la vela del mapa
             }
         });
@@ -1219,7 +1345,7 @@ class GameOnlineScene extends Phaser.Scene {
     }
 
     // type 'x'
-    handleCrucifixCollection(){
+    handleCrucifixCollection() {
         this.crucifix.destroy()
         this.aura.setRadius(75).setIntensity(6) // Poner el radio a 75 para que sea visible el aura. Para quitarla poner el radio a 0
         this.crucifijoObtenido = true
