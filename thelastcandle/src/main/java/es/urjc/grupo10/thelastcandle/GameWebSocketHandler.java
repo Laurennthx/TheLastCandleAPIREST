@@ -51,6 +51,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         List<Candle> candles; // Velas de la partida
         int nCandles;
         List<Integer> rituals; // Velas de la partida
+        Crucifix crucifix;
 
         int timeForCrucifix = 10; // Tiempo para que salga el crucifijo
         ScheduledFuture<?> timerTask;
@@ -60,7 +61,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             this.player1 = player1;
             this.player2 = player2;
             this.nCandles = 5;
-            this.rituals =  new ArrayList<>(Arrays.asList(0, 0, 0));
+            this.rituals = new ArrayList<>(Arrays.asList(0, 0, 0));
         }
     }
 
@@ -69,6 +70,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     private double escalaBg = (double) 1080 / 15522;
     private double anchuraVela = 865 * 0.013 / escalaBg;
     private double alturaVela = 1449 * 0.013 / escalaBg;
+    private double anchuraCrucifix = 547 * 0.5;
+    private double alturaCrucifix = 721 * 0.5;
 
     private static class Room {
         double x, y, width, height;
@@ -89,6 +92,17 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             this.id = id;
             this.x = x;
             this.y = y;
+        }
+    }
+
+    private static class Crucifix {
+        double x, y;
+        boolean picked;
+
+        public Crucifix(double x, double y) {
+            this.x = x;
+            this.y = y;
+            this.picked = false;
         }
     }
 
@@ -179,6 +193,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         // Send initial state to both players.
         sendToPlayer(game.player1, "i", Map.of("id", 1, "p", playersData));
         sendToPlayer(game.player2, "i", Map.of("id", 2, "p", playersData));
+
+        // Generar el crucifijo
+        game.crucifix = generateCrucifix();
+        sendToPlayer(game.player1, "g", Arrays.asList(game.crucifix.x, game.crucifix.y));
+        sendToPlayer(game.player2, "g", Arrays.asList(game.crucifix.x, game.crucifix.y));
+
     }
 
     // #endregion
@@ -219,10 +239,17 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     break;
                 case 'l': // Colocar vela en ritual
                     Integer ritualRemoved = mapper.readValue(data, Integer.class);
-                    if (game.rituals.get(ritualRemoved - 1) != -1) { // Si no tienen el valor -1 es que todavía no han sido usados
+                    if (game.rituals.get(ritualRemoved - 1) != -1) { // Si no tienen el valor -1 es que todavía no han
+                                                                     // sido usados
                         game.rituals.set(ritualRemoved - 1, -1);
                         sendToPlayer(currentPlayer, "l", ritualRemoved);
                         sendToPlayer(otherPlayer, "l", ritualRemoved);
+                    }
+                case 'x': // Obtener crucifijo
+                    if (game.crucifix.picked == false) {
+                        game.crucifix.picked = true;
+                        sendToPlayer(currentPlayer, "x", null);
+                        sendToPlayer(otherPlayer, "x", null);
                     }
                     break;
                 case 'r': // Un jugador está ready para EMPEZAR la partida
@@ -366,4 +393,25 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         }
         return candles;
     }
+
+    /**
+     * Genera el crucifijo en posición aleatoria.
+     * Devuelve un crucifijo.
+     */
+    // Método para generar el crucifijo
+    public Crucifix generateCrucifix() {
+        // Selección aleatoria de habitación
+        Room randomRoom = rooms.get(random.nextInt(rooms.size()));
+
+        // Generar una posición aleatoria dentro de la habitación
+        double x = randomRoom.x + random.nextDouble() * (randomRoom.width - anchuraCrucifix) - randomRoom.width / 2
+                + anchuraCrucifix / 2;
+        double y = randomRoom.y + random.nextDouble() * (randomRoom.height - alturaCrucifix) - randomRoom.height / 2
+                + alturaCrucifix / 2;
+
+        // Crear el crucifijo con las coordenadas generadas
+        Crucifix crucifix = new Crucifix(x, y);
+        return crucifix;
+    }
+
 }

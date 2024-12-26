@@ -4,12 +4,13 @@
  */
 const MSG_TYPES = {
     INIT: 'i',        // Initialize game state
-    SELECT: 's',        // Select character
     READY: 'r',        // Initialize game state
     POS: 'p',         // Update player position
     CANDLES: 'c',      // Spawn candles
     COLLECT: 'v',     // Candle collection event
     PLACE: 'l',         // Place a candle
+    GENERATE: 'g',         // Generate crucifix pos
+    CRUCIFIX: 'x',         // Collect crucifix
     TIME: 't',        // Update game timer
     OVER: 'o'         // End game event
 };
@@ -91,8 +92,13 @@ class GameOnlineScene extends Phaser.Scene {
         // Crear el mapa como fondo, dimensiones: 9962 x 15522
         const background = this.add.image(0, 0, 'background4').setOrigin(0, 0)
         const alturaBg = 15522; // La altura original de la imagen grande sobre la que se ha puesto el resto de sprites. Reduce el tiempo de carga
-        this.crucifix = this.physics.add.sprite(0, 0, 'crucifix').setOrigin(0, 0)    // Iniciar el crucifijo en cualquier parte
         this.escalaBg = this.scale.height / alturaBg
+
+        this.crucifix = this.physics.add.sprite(0, 0, 'crucifix').setOrigin(0, 0)    // Iniciar el crucifijo en cualquier parte
+        this.crucifixX = 0
+        this.crucifixY = 0
+
+        
 
         // MOVIMIENTO
         this.lastKeyExorcist
@@ -323,7 +329,7 @@ class GameOnlineScene extends Phaser.Scene {
         // Detectar colisiones con rituales
         this.physics.add.overlap(this.exorcist, this.grupoRituales, this.placeCandle, null, this);
         // Detectar colisión del exorcista con el crucifijo
-        this.physics.add.overlap(this.exorcist, this.crucifix, this.cogerCrucifijo, null, this);
+        this.physics.add.overlap(this.exorcist, this.crucifix, this.collectCrucifix, null, this);
         // Detectar colisiones con interruptores
         this.physics.add.overlap(this.exorcist, this.interruptoresOn, this.cambiarInterruptores, null, this);
         this.physics.add.overlap(this.demon, this.interruptoresOn, this.cambiarInterruptores, null, this);
@@ -463,10 +469,12 @@ class GameOnlineScene extends Phaser.Scene {
 
         // Generar el crucifijo tras 6 segundos de partida
         this.time.addEvent({
-            delay: 6000,          // Retraso en milisegundos (6000 ms = 6 segundos)
+            delay: 3000,          // Retraso en milisegundos (6000 ms = 6 segundos)
             callback: this.generateCrucifix,   // Función a llamar después del retraso
             callbackScope: this   // Contexto (scope) de la función, generalmente `this` para acceder a la escena
         });
+
+
 
         // #region MENU DE PAUSA
         // Fondo del menú de pausa
@@ -743,38 +751,29 @@ class GameOnlineScene extends Phaser.Scene {
         return collider
     }
 
-    generateCrucifix() {
+    generateCrucifix(){
+        const x = this.crucifixX
+        const y = this.crucifixY
+        this.crucifix.visible = true
+
         const texturaCrucifix = this.textures.get('crucifix');
         let escalaCrucifijo = 0.5
         this.crucifix.setScale(escalaCrucifijo)
         const anchuraCrucifix = texturaCrucifix.getSourceImage().width * escalaCrucifijo
         const alturaCrucifix = texturaCrucifix.getSourceImage().height * escalaCrucifijo
 
-        const rooms = [this.bedroom1, this.bedroom2, this.bedroom3, this.bathroom2, this.kitchen, this.livingRoom, this.hall, this.corridor1, this.corridor2, this.hall2]
-
-        const randomRoom = Phaser.Utils.Array.GetRandom(rooms);
-
-        let x = randomRoom.x + Phaser.Math.Between(-randomRoom.width / 2, randomRoom.width / 2 - anchuraCrucifix);
-        let y = randomRoom.y + Phaser.Math.Between(-randomRoom.height / 2, randomRoom.height / 2 - alturaCrucifix);
-
         this.crucifix.setPosition(x, y)
         this.aura.setPosition((x + anchuraCrucifix / 2) * this.escalaBg, (y + alturaCrucifix / 2) * this.escalaBg)
         this.aura.setRadius(60).setIntensity(10)
 
-        console.log("Crucifijo generado")
+        console.log("Crucifijo generado en: " + x + " " + y)
     }
 
-    cogerCrucifijo() {
-        this.crucifix.destroy()
-        this.aura.setRadius(75).setIntensity(6) // Poner el radio a 75 para que sea visible el aura. Para quitarla poner el radio a 0
-        this.crucifijoObtenido = true
-        this.crucifixText.setVisible(true);
-        this.sound.play("crucifix"); // Reproducir sonido al recoger la vela
+    collectCrucifix() {
+        this.sendMessage(MSG_TYPES.CRUCIFIX, null)
     }
 
     // #region VELAS
-
-
     // RECOGER VELA
     collectCandle(exorcist, candle) {
         if (!this.isPaused && Phaser.Input.Keyboard.JustDown(this.interactKeyEx)) {
@@ -1120,6 +1119,12 @@ class GameOnlineScene extends Phaser.Scene {
                 case MSG_TYPES.PLACE: // type 'l'
                     this.handlePlaceCandle(data);
                     break;
+                case MSG_TYPES.GENERATE: // type 'g'
+                    this.handleGenCrucifix(data);
+                    break;
+                case MSG_TYPES.CRUCIFIX: // type 'x'
+                    this.handleCrucifixCollection(data);
+                    break;
                 case MSG_TYPES.TIME:
                     this.handleTime(data);
                     break;
@@ -1134,6 +1139,7 @@ class GameOnlineScene extends Phaser.Scene {
         };
     }
 
+    // Definir si este jugador es exorcista o demonio
     handleInit(data) {
         console.log(data)
     }
@@ -1202,4 +1208,23 @@ class GameOnlineScene extends Phaser.Scene {
         // Llama al método para verificar rituales
         this.checkCompletedRituals();
     }
+
+    // type 'g'
+    handleGenCrucifix(data) {
+        const x = data[0]
+        const y = data[1]
+        this.crucifixX = x
+        this.crucifixY = y
+        this.crucifix.visible = false
+    }
+
+    // type 'x'
+    handleCrucifixCollection(){
+        this.crucifix.destroy()
+        this.aura.setRadius(75).setIntensity(6) // Poner el radio a 75 para que sea visible el aura. Para quitarla poner el radio a 0
+        this.crucifijoObtenido = true
+        this.crucifixText.setVisible(true);
+        this.sound.play("crucifix"); // Reproducir sonido al recoger la vela
+    }
+
 }
