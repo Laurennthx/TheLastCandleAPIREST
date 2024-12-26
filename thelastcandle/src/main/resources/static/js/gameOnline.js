@@ -3,16 +3,17 @@
  * @enum {string}
  */
 const MSG_TYPES = {
-    INIT: 'i',        // Initialize game state
-    READY: 'r',        // Initialize game state
+    INIT: 'i',        // Initialize game state      LISTO
+    READY: 'r',        // Initialize game state     LISTO
+    SKIN: 's',        // Update selected skins      LISTO
     POS: 'p',         // Update player position     LISTO
     CANDLES: 'c',      // Spawn candles             LISTO
     COLLECT: 'v',     // Candle collection event    LISTO
     PLACE: 'l',         // Place a candle           LISTO
     GENERATE: 'g',         // Generate crucifix pos LISTO
     CRUCIFIX: 'x',         // Collect crucifix      LISTO
-    LIGHT: 't',         // Activate lights      
-    OVER: 'o'         // End game event
+    LIGHT: 't',         // Activate lights          LISTO
+    OVER: 'o'         // End game event             LISTO
 };
 
 class GameOnlineScene extends Phaser.Scene {
@@ -48,19 +49,39 @@ class GameOnlineScene extends Phaser.Scene {
 
         /** @type {number} Minimum movement threshold for sending position updates */
         this.POSITION_THRESHOLD = 2;
+
+        /** @type {string} Chosen animation exorcist*/
+        this.chosenAnimEx = null
+
+        /** @type {string} Chosen animation demon */
+        this.chosenAnimDe = null
     }
 
     // #region PRELOAD
     preload() {
-        // Animación exorcista
-        this.load.spritesheet('exorcistWalk', 'assets/Animations/Exorcista/Exorcista/spriteSheetExorcista.png', {
+        // Animación exorcista 1
+        this.load.spritesheet('exorcist1', 'assets/Animations/Exorcista/Exorcista/spriteSheetExorcista.png', {
             frameWidth: 1100,  // Ancho de cada fotograma
             frameHeight: 1920  // Altura de cada fotograma
         });
 
-        this.load.spritesheet('demonWalk', 'assets/Animations/Demonio/Demonio/spriteSheetDemonio.png', {
-            frameWidth: 1280,  // Ancho de cada fotograma
-            frameHeight: 1853  // Altura de cada fotograma
+        // Animación exorcista 2
+        this.load.spritesheet('exorcist2', 'assets/Animations/Exorcista2/Exorcista2Spritesheet.png', {
+            frameWidth: 1100,
+            frameHeight: 1920
+        });
+
+
+        // Animación demonio 1
+        this.load.spritesheet('demon1', 'assets/Animations/Demonio/Demonio/spriteSheetDemonio.png', {
+            frameWidth: 1276,
+            frameHeight: 1853
+        });
+
+        // Animación demonio 2
+        this.load.spritesheet('demon2', 'assets/Animations/Demonio2/demon2Spritesheet.png', {
+            frameWidth: 1275,
+            frameHeight: 1920
         });
 
         // menu de pausa
@@ -84,6 +105,9 @@ class GameOnlineScene extends Phaser.Scene {
 
     // #region CREATE
     create() {
+        this.loadingBg = this.add.image(this.scale.width / 2, this.scale.height / 2, 'LoadingBG').
+            setOrigin(0.5).setDisplaySize(this.scale.width, this.scale.height);
+        this.loadingBg.depth = 5000
         this.isPaused = false; // Estado inicial del juego no pausado
 
         // Connect to WebSocket
@@ -232,33 +256,46 @@ class GameOnlineScene extends Phaser.Scene {
 
         // #region PERSONAJES 
 
-        // EXORCISTA ANIMACIÓN
-        // Crear la animación de caminar
-        this.anims.create({
-            key: 'walk', // Nombre de la animación
-            frames: this.anims.generateFrameNumbers('exorcistWalk', { start: 0, end: 3 }), // Rango de fotogramas
-            frameRate: 4, // Velocidad de reproducción (fotogramas por segundo)
-            repeat: -1 // Repetir indefinidamente
-        });
-
+        // EXORCISTA 
         // Crear el sprite del exorcista
-        this.exorcist = this.physics.add.sprite(400, 530, 'exorcistWalk');
+        this.exorcist = this.physics.add.sprite(400, 530, 'exorcist1');
         this.exorcist.setCollideWorldBounds(true);
         this.exorcist.setScale(0.03); // Ajusta el tamaño según tus necesidades
 
-        // DEMONIO ANIMACIÓN
-        // Crear la animación de caminar
-        this.anims.create({
-            key: 'demonWalk', // Nombre de la animación
-            frames: this.anims.generateFrameNumbers('demonWalk', { start: 0, end: 3 }), // Rango de fotogramas
-            frameRate: 4, // Velocidad de reproducción (fotogramas por segundo)
-            repeat: -1 // Repetir indefinidamente
-        });
-
         // Crear el sprite del demonio
-        this.demon = this.physics.add.sprite(400, 800, 'demonWalk');
+        this.demon = this.physics.add.sprite(400, 800, 'demon1');
         this.demon.setCollideWorldBounds(true);
         this.demon.setScale(0.035); // Ajusta el tamaño según tus necesidades
+
+        // Crear animaciones
+        this.anims.create({
+            key: 'exorcist1Anim',
+            frames: this.anims.generateFrameNumbers('exorcist1', { start: 0, end: 3 }),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'exorcist2Anim',
+            frames: this.anims.generateFrameNumbers('exorcist2', { start: 0, end: 3 }),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        // Crear animaciones
+        this.anims.create({
+            key: 'demon1Anim',
+            frames: this.anims.generateFrameNumbers('demon1', { start: 0, end: 3 }),
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'demon2Anim',
+            frames: this.anims.generateFrameNumbers('demon2', { start: 0, end: 3 }),
+            frameRate: 4,
+            repeat: -1
+        });
 
 
         // #endregion
@@ -300,33 +337,8 @@ class GameOnlineScene extends Phaser.Scene {
         this.killExorcist.setScale(0.4, 0.4);
         this.killExorcist.setVisible(false); // Inicialmente oculto
 
-        // #region CONTROLES
-
-        // Verificar en update si se pulsa E
-        this.input.keyboard.on('keydown-E', () => {
-            if (this.killDemon.visible) { // Solo si el botón es visible
-                this.sound.play("select");
-                this.scene.stop("gameScene");
-                this.scene.sleep("ChatScene");
-                this.scene.start("ExorcistWinsScene");
-            }
-        });
-
-        // Verificar en update si se pulsa ENTER
-        this.input.keyboard.on('keydown-ENTER', () => {
-            if (this.killExorcist.visible) { // Solo si el botón es visible
-                this.sound.play("select");
-                this.scene.stop("gameScene");
-                this.scene.sleep("ChatScene");
-                this.scene.start("EndScene");
-                this.ritualCount = 0; // Reinicia el contador de rituales
-                this.candleCount = 0; // Reinicia el contador de velas
-            }
-        });
-
 
         // #region COLLIDERS
-
         // Detectar colisiones con rituales
         this.physics.add.overlap(this.exorcist, this.grupoRituales, this.placeCandle, null, this);
         // Detectar colisión del exorcista con el crucifijo
@@ -585,14 +597,12 @@ class GameOnlineScene extends Phaser.Scene {
         this.cameras.main.ignore([this.visionAreaDe, divider, this.killDemon, this.killExorcist, ...pauseMenuElements, BGChat, onlineBG])
 
 
+        // Pausar la escena y esperar a los mensajes del servidor.
+        // Se iniciará la escena de selección de personajes tras algunos mensajes del servidor
+        this.scene.pause()
 
         // Setup WebSocket event handlers
         this.setupWebSocket();
-
-        // this.scene.pause()
-        // console.log("Escena pausada")
-        //this.add.image(this.scale.width / 2, this.scale.height / 2, 'LoadingBG').setOrigin(0.5).setDisplaySize(this.scale.width, this.scale.height);
-        //this.scene.launch("ChoosingCharacterScene")
 
         //#region FIN CREATE
     }
@@ -623,8 +633,8 @@ class GameOnlineScene extends Phaser.Scene {
         this.isPaused = !isVisible;
         if (this.isPaused) {
             this.resetKeys()
-            this.demon.anims.stop('demonWalk'); // parar animación
-            this.exorcist.anims.stop('walk'); // parar animación
+            this.demon.anims.stop(this.chosenAnimDe); // parar animación
+            this.exorcist.anims.stop(this.chosenAnimEx); // parar animación
             // Desactivar el botón del chat
             this.chatB.depth = -1   // Hacer que se vea oscuro porque tien el fade delante
             this.chatB.removeInteractive()
@@ -656,8 +666,8 @@ class GameOnlineScene extends Phaser.Scene {
             // Pausar los controles
             this.isPaused = this.isChatActive;
             this.resetKeys()
-            this.demon.anims.stop('demonWalk'); // parar animación
-            this.exorcist.anims.stop('walk'); // parar animación
+            this.demon.anims.stop(this.chosenAnimDe); // parar animación
+            this.exorcist.anims.stop(this.chosenAnimEx); // parar animación
 
             // Si el chat está activado, obtener los usuarios conectados
             this.getConnectedUsers();
@@ -914,6 +924,7 @@ class GameOnlineScene extends Phaser.Scene {
 
     // #region CONTROLES
 
+    // Gestionar que todos los inputs se inicien bien dependiendo si es exorcista o demonio
     iniciarControles() {
         // CONTROLES PERSONAJES
         if (this.playerId == 1) {
@@ -930,32 +941,53 @@ class GameOnlineScene extends Phaser.Scene {
         else if (this.playerId == 2) {
             this.interactKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)
         }
+
+        if (this.playerId == 1) {
+            // Verificar en update si se pulsa E
+            this.input.keyboard.on('keydown-E', () => {
+                if (this.killDemon.visible) { // Solo si el botón es visible
+                    this.sound.play("select");
+                    //Enviar mensaje al servidor
+                    this.sendMessage(MSG_TYPES.OVER, this.playerId)
+                }
+            });
+        }
+        else if (this.playerId == 2) {
+            // Verificar en update si se pulsa ENTER
+            this.input.keyboard.on('keydown-ENTER', () => {
+                if (this.killExorcist.visible) { // Solo si el botón es visible
+                    this.sound.play("select");
+                    // Enviar mensaje al servidor
+                    this.sendMessage(MSG_TYPES.OVER, this.playerId)
+                }
+            });
+        }
     }
 
     setupPaddleControllersDemon() {
         // Key down
         this.input.keyboard.on('keydown-LEFT', () => {
             if (this.isPaused) return; // Bloquea acción si está pausado
-            this.demon.anims.play('demonWalk', true); // Reproducir animación
+            this.demon.anims.play(this.chosenAnimDe, true); // Reproducir animación
             this.demon.flipX = true; // Voltear el sprite horizontalmente
             this.keysPressedDe[0][1] = true
             this.lastKeyDemon = 0
         });
         this.input.keyboard.on('keydown-UP', () => {
             if (this.isPaused) return; // Bloquea acción si está pausado
-            this.demon.anims.play('demonWalk', true); // Reproducir animación
+            this.demon.anims.play(this.chosenAnimDe, true); // Reproducir animación
             this.keysPressedDe[1][1] = true
             this.lastKeyDemon = 1
         });
         this.input.keyboard.on('keydown-DOWN', () => {
             if (this.isPaused) return; // Bloquea acción si está pausado
-            this.demon.anims.play('demonWalk', true); // Reproducir animación
+            this.demon.anims.play(this.chosenAnimDe, true); // Reproducir animación
             this.keysPressedDe[2][1] = true
             this.lastKeyDemon = 2
         });
         this.input.keyboard.on('keydown-RIGHT', () => {
             if (this.isPaused) return; // Bloquea acción si está pausado
-            this.demon.anims.play('demonWalk', true); // Reproducir animación
+            this.demon.anims.play(this.chosenAnimDe, true); // Reproducir animación
             this.demon.flipX = false; // Voltear el sprite horizontalmente
             this.keysPressedDe[3][1] = true
             this.lastKeyDemon = 3
@@ -990,26 +1022,26 @@ class GameOnlineScene extends Phaser.Scene {
         // Key down
         this.input.keyboard.on('keydown-A', () => {
             if (this.isPaused) return; // Bloquea acción si está pausado
-            this.exorcist.anims.play('walk', true); // Reproducir animación
+            this.exorcist.anims.play(this.chosenAnimEx, true); // Reproducir animación
             this.exorcist.flipX = true; // Voltear el sprite horizontalmente
             this.keysPressedEx[0][1] = true
             this.lastKeyExorcist = 0
         });
         this.input.keyboard.on('keydown-W', () => {
             if (this.isPaused) return; // Bloquea acción si está pausado
-            this.exorcist.anims.play('walk', true); // Reproducir animación
+            this.exorcist.anims.play(this.chosenAnimEx, true); // Reproducir animación
             this.keysPressedEx[1][1] = true
             this.lastKeyExorcist = 1
         });
         this.input.keyboard.on('keydown-S', () => {
             if (this.isPaused) return; // Bloquea acción si está pausado
-            this.exorcist.anims.play('walk', true); // Reproducir animación
+            this.exorcist.anims.play(this.chosenAnimEx, true); // Reproducir animación
             this.keysPressedEx[2][1] = true
             this.lastKeyExorcist = 2
         });
         this.input.keyboard.on('keydown-D', () => {
             if (this.isPaused) return; // Bloquea acción si está pausado
-            this.exorcist.anims.play('walk', true); // Reproducir animación
+            this.exorcist.anims.play(this.chosenAnimEx, true); // Reproducir animación
             this.exorcist.flipX = false; // Restaurar orientación original
             this.keysPressedEx[3][1] = true
             this.lastKeyExorcist = 3
@@ -1075,7 +1107,7 @@ class GameOnlineScene extends Phaser.Scene {
                 }
             }
             if (this.exorcist.body.velocity.x == 0 && this.exorcist.body.velocity.y == 0) {
-                this.exorcist.anims.stop('walk'); // parar animación
+                this.exorcist.anims.stop(this.chosenAnimEx); // parar animación
             }
         }
         else if (this.playerId == 2) {
@@ -1087,7 +1119,7 @@ class GameOnlineScene extends Phaser.Scene {
                 }
             }
             if (this.demon.body.velocity.x == 0 && this.demon.body.velocity.y == 0) {
-                this.demon.anims.stop('demonWalk'); // parar animación
+                this.demon.anims.stop(this.chosenAnimDe); // parar animación
             }
         }
 
@@ -1175,6 +1207,9 @@ class GameOnlineScene extends Phaser.Scene {
                 case MSG_TYPES.READY:
                     this.handleReady(data);  // type 'r'
                     break;
+                case MSG_TYPES.SKIN:
+                    this.handleSkinSelection(data);  // type 's'
+                    break;
                 case MSG_TYPES.POS: //type 'p'
                     this.handlePosition(data);
                     break;
@@ -1196,6 +1231,9 @@ class GameOnlineScene extends Phaser.Scene {
                 case MSG_TYPES.LIGHT: // type 't'
                     this.handleLightSwitch(data);
                     break;
+                case MSG_TYPES.OVER: // type 'o'
+                    this.handleOver(data);
+                    break;
             }
         };
 
@@ -1204,29 +1242,75 @@ class GameOnlineScene extends Phaser.Scene {
         };
     }
 
-    // type 'i'. Definir si este jugador es exorcista o demonio. 
+    // type 'i'. Definir si este jugador es exorcista o demonio. Inicia la selección de personaje
     handleInit(data) {
-        this.playerId = data.id   // 1: exorcista. 2: demonio
-        this.iniciarControles()
-        if (this.playerId == 1) {
-            this.otherPlayer = this.demon
-        }
-        else if (this.playerId == 2) {
-            this.otherPlayer = this.exorcist
-        }
+        this.playerId = data    // 1: exorcista. 2: demonio
         console.log("Jugador: " + this.playerId)
+        this.iniciarControles()
         this.sendMessage(MSG_TYPES.READY)   // Enviar la primera señal de ready
+        if (this.playerId == 1) {   // Le ha tocado exorcista
+            this.otherPlayer = this.demon
+            this.scene.launch('ExorcistSkin')
+        }
+        else if (this.playerId == 2) {  // Le ha tocado demonio
+            this.otherPlayer = this.exorcist
+            this.scene.launch('DemonSkin')
+        }
     }
 
     // type 'r'
     handleReady(data) {
         if (data == 1) {
-            this.startCrucifixTimer()
+            console.log("Escenas cargadas")
         }
         else if (data == 2) {
-            // NOTA: aquí debería ir el starCrucifixTime, porque
-            // significa que los jugadores están listos para comenzar la partida
+            // NOTA: quitar la escena de selección de personaje
+            console.log("Comenzando la partida...")
+            this.startCrucifixTimer()
+            this.scene.resume()
+            this.loadingBg.visible = false  // Quitar la pantalla de loading que cubría la escena
+            if (this.playerId == 1) {
+                const characterScene = this.scene.get('ExorcistSkin');
+                characterScene.stopScene()
+            }
+            else {
+                const characterScene = this.scene.get('DemonSkin');
+                characterScene.stopScene()
+            }
         }
+    }
+
+    sendChosenSkin(skinName) {
+        this.sendMessage(MSG_TYPES.SKIN, skinName)   // Enviar la skin seleccionada
+    }
+
+    // #region ANIMACIONES
+    // type 's'
+    handleSkinSelection(data) {    // nombres de las skins escogidas
+        const exorcistSkin = data[0]
+        const demonSkin = data[1]
+
+        let exorcistSinComillas = exorcistSkin.substring(1, exorcistSkin.length - 1);
+        this.chosenAnimEx = exorcistSinComillas;
+        this.exorcist.setTexture(exorcistSinComillas);
+        if (exorcistSinComillas == "exorcist1Anim") {
+            this.exorcist.setTexture('exorcist1');
+        }
+        else {
+            this.exorcist.setTexture('exorcist2');
+        }
+
+        let demonSinComillas = demonSkin.substring(1, demonSkin.length - 1);
+        this.chosenAnimDe = demonSinComillas;
+        if (demonSinComillas == "demon1Anim") {
+            this.demon.setTexture('demon1');
+        }
+        else {
+            this.demon.setTexture('demon2');
+        }
+
+        // Enviar la segunda señal de ready
+        this.sendMessage(MSG_TYPES.READY)
     }
 
     // type 'p'
@@ -1248,10 +1332,10 @@ class GameOnlineScene extends Phaser.Scene {
             }
             if (this.otherPlayer.dx + this.otherPlayer.dy != 0) {
                 if (data[0] == 1) {
-                    this.otherPlayer.anims.play('walk', true); // Reproducir animación
+                    this.otherPlayer.anims.play(this.chosenAnimEx, true); // Reproducir animación
                 }
                 else if (data[0] == 2) {
-                    this.otherPlayer.anims.play('demonWalk', true); // Reproducir animación
+                    this.otherPlayer.anims.play(this.chosenAnimDe, true); // Reproducir animación
                 }
             }
 
@@ -1265,9 +1349,9 @@ class GameOnlineScene extends Phaser.Scene {
             this.inactivityTimeout = setTimeout(() => {
                 // Detener la animación si no hay nuevas actualizaciones
                 if (data[0] === 1) {
-                    this.otherPlayer.anims.stop('walk', true);
+                    this.otherPlayer.anims.stop(this.chosenAnimEx, true);
                 } else if (data[0] === 2) {
-                    this.otherPlayer.anims.stop('demonWalk', true);
+                    this.otherPlayer.anims.stop(this.chosenAnimDe, true);
                 }
             }, this.POSITION_UPDATE_INTERVAL * 2);
         }
@@ -1365,4 +1449,45 @@ class GameOnlineScene extends Phaser.Scene {
         }
     }
 
+    // type 'o'
+    handleOver(data) {
+        if (data == 0) {   // Está en selección de personaje y un jugador ha dejado la partida
+            // Cargar escena de que un jugador ha dejado la partida
+            console.log("Alguien dejo la partida")
+            if (this.playerId == 1) {   // Le ha tocado exorcista
+                console.log("Exorcista todavía selecionando")
+                const characterScene = this.scene.get('ExorcistSkin');
+                characterScene.stopScene()
+                this.scene.stop("GameOnlineScene");
+                this.scene.start("ExorcistWinsScene")
+                this.ritualCount = 0; // Reinicia el contador de rituales
+                this.candleCount = 0; // Reinicia el contador de velas
+            }
+            else if (this.playerId == 2) {  // Le ha tocado demonio
+                console.log("Demonio todavía selecionando")
+                const characterScene = this.scene.get('DemonSkin');
+                characterScene.stopScene()
+                this.scene.stop("GameOnlineScene");
+                this.scene.start("EndScene")
+                this.ritualCount = 0; // Reinicia el contador de rituales
+                this.candleCount = 0; // Reinicia el contador de velas
+            }
+        }
+        else if (data[0] > 0) { // Un jugador ha ganado
+            if (data[1] == 1) {   // Ha ganado el exorcista
+                this.scene.stop("GameOnlineScene");
+                this.sleepChat()
+                this.scene.start("ExorcistWinsScene")
+                this.ritualCount = 0; // Reinicia el contador de rituales
+                this.candleCount = 0; // Reinicia el contador de velas
+            }
+            else if (data[1] == 2) {  // Ha ganado el demonio
+                this.scene.stop("GameOnlineScene");
+                this.sleepChat()
+                this.scene.start("EndScene");
+                this.ritualCount = 0; // Reinicia el contador de rituales
+                this.candleCount = 0; // Reinicia el contador de velas
+            }
+        }
+    }
 }

@@ -32,6 +32,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         double y;
         int playerId;
         int ready;
+        String skin;
 
         Player(WebSocketSession session) {
             this.session = session;
@@ -54,6 +55,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         Crucifix crucifix;
         Boolean lightState;
 
+        int started;
+
         int timeForCrucifix = 10; // Tiempo para que salga el crucifijo
         ScheduledFuture<?> timerTask;
 
@@ -63,6 +66,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             this.nCandles = 5;
             this.rituals = new ArrayList<>(Arrays.asList(0, 0, 0));
             this.lightState = true;
+            this.started = 0;
         }
     }
 
@@ -194,15 +198,10 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         game.player1.playerId = player1Id;
         game.player2.playerId = player2Id;
 
-        // Create initial player data: [x, y, playerId]
-        List<List<Object>> playersData = Arrays.asList(
-                Arrays.asList(game.player1.x, game.player1.y, game.player1.playerId),
-                Arrays.asList(game.player2.x, game.player2.y, game.player2.playerId));
-
-        // Send initial state to both players.
-        sendToPlayer(game.player1, "i", Map.of("id", game.player1.playerId, "p", playersData));
-        sendToPlayer(game.player2, "i", Map.of("id", game.player2.playerId, "p", playersData));
-
+        // Send initial state to both players. We only send the id, 1 or 2 depending if
+        // exorcist or demon
+        sendToPlayer(game.player1, "i", game.player1.playerId);
+        sendToPlayer(game.player2, "i", game.player2.playerId);
     }
 
     // #endregion
@@ -261,13 +260,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     break;
                 case 't': // Interactuar con las luces
                     Boolean desiredLights = Boolean.parseBoolean(data);
-                    if(desiredLights != game.lightState){
+                    if (desiredLights != game.lightState) {
                         game.lightState = desiredLights;
-                        if(desiredLights){
+                        if (desiredLights) {
                             sendToPlayer(currentPlayer, "t", true);
                             sendToPlayer(otherPlayer, "t", true);
-                        }
-                        else{
+                        } else {
                             sendToPlayer(currentPlayer, "t", false);
                             sendToPlayer(otherPlayer, "t", false);
                         }
@@ -279,19 +277,40 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                         // Los dos jugadores han cargado la escena
                         sendToPlayer(currentPlayer, "r", 1);
                         sendToPlayer(otherPlayer, "r", 1);
-                    } else if (currentPlayer.ready == 2 && otherPlayer.ready == 2) {
-                        // Los dos jugadores están listos para comenzar
+                    } 
+                    else if (currentPlayer.ready == 2 && otherPlayer.ready == 2) {
+                        // Los dos jugadores están listos para comenzar.
+                        game.started = 1; // Indicar que la partida ha empezado
                         sendToPlayer(currentPlayer, "r", 2);
                         sendToPlayer(otherPlayer, "r", 2);
                     }
                     break;
+                case 's': // Skin recibida
+                    String skinSelected = data;
+                    currentPlayer.skin = skinSelected;
+                    if (otherPlayer.skin != null) { // Si los dos jugadores han escogido ya su skin. Enviar las skins
+                        if (currentPlayer.playerId == 1) {
+                            sendToPlayer(currentPlayer, "s", Arrays.asList(currentPlayer.skin, otherPlayer.skin));
+                            sendToPlayer(otherPlayer, "s", Arrays.asList(currentPlayer.skin, otherPlayer.skin));
+                        } else {
+                            sendToPlayer(currentPlayer, "s", Arrays.asList(otherPlayer.skin, currentPlayer.skin));
+                            sendToPlayer(otherPlayer, "s", Arrays.asList(otherPlayer.skin, currentPlayer.skin));
+                        }
+                    }
+                    break;
+                case 'o': // Un jugador está ready
+                    Integer winningId = mapper.readValue(data, Integer.class);
+                    if (game.started == 1) { // Solo si la partida está en curso
+                        game.started = 2; // Indicar que ha finalizado
+                        endGame(game, winningId);
+                    }
+                    break;
             }
-        }catch(
+        } catch (
 
-    IOException e)
-    {
-        e.printStackTrace();
-    }
+        IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -320,20 +339,24 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      * Ends the game by sending winning player and cleaning up game resources.
      * Message format 'o': Game over with the id of the winning player
      */
-    private void endGame(Game game) {
-        // NOTA: cambiar esto
-        // // Send final scores to both players
-        // List<Integer> finalScores = Arrays.asList(game.player1.score,
-        // game.player2.score);
-
-        // if (this.players.containsKey(game.player1.session.getId())) {
-        // sendToPlayer(game.player1, "o", finalScores);
-        // }
-
-        // if (this.players.containsKey(game.player2.session.getId())) {
-        // sendToPlayer(game.player2, "o", finalScores);
-        // }
-
+    private void endGame(Game game, int id) {
+        if (game.started == 0) {
+            if (this.players.containsKey(game.player1.session.getId())) {
+                sendToPlayer(game.player1, "o", 0); // 0: game hasn't started but someone disconnected
+            }
+            if (this.players.containsKey(game.player2.session.getId())) {
+                sendToPlayer(game.player2, "o", 0);
+            }
+        } else {
+            // game started: if it's > 0 it has started. id: winning player (1 or 2)
+            List<Integer> finalScores = Arrays.asList(game.started, id);
+            if (this.players.containsKey(game.player1.session.getId())) {
+                sendToPlayer(game.player1, "o", finalScores);
+            }
+            if (this.players.containsKey(game.player2.session.getId())) {
+                sendToPlayer(game.player2, "o", finalScores);
+            }
+        }
         games.remove(game.player1.session.getId());
         games.remove(game.player2.session.getId());
     }
@@ -344,14 +367,16 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
      */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        players.remove(session.getId());
+        Player disconnectedPlayer = players.remove(session.getId());
         waitingPlayers.remove(session);
 
         Game game = games.remove(session.getId());
         if (game != null) {
-            endGame(game);
+            // Terminar la partida si un jugador se ha desconectado
+            // Enviar el id del jugador ganador, en este caso el otro
+            int winningId = (disconnectedPlayer.playerId == 1) ? 2 : 1;
+            endGame(game, winningId);
         }
-
     }
 
     // #region VELAS

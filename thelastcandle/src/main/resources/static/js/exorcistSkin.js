@@ -6,9 +6,11 @@ class ExorcistSkin extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image("bStart", 'assets/UI/start.png');
+
         this.load.audio("select", 'assets/Music/effects/click/oldRadio.mp3');
         this.load.audio("hover", 'assets/Music/effects/click/darkButton.mp3');
-        
+
         this.load.image("backgroundSkin", "assets/UI/skin/skinSelectionScene.jpg");
         this.load.image("arrowRight", "assets/UI/skin/arrowRight.png");
         this.load.image("arrowLeft", "assets/UI/skin/arrowLeft.png");
@@ -28,6 +30,9 @@ class ExorcistSkin extends Phaser.Scene {
     }
 
     create() {
+        // Escena del juego online, donde se envían los mensajes
+        this.gameOnlineScene = this.scene.get('GameOnlineScene');
+
         // Imagen de fondo
         const backgroundSkin = this.add.image(0, 0, "backgroundSkin").setOrigin(0, 0);
         backgroundSkin.setDisplaySize(1920, 1080);
@@ -56,23 +61,56 @@ class ExorcistSkin extends Phaser.Scene {
 
         // Interactividad de las flechas
         arrowRight.setInteractive()
-        .on('pointerdown', () => {
-            this.sound.play('select'); // Reproducir sonido de selección
-            this.switchExorcist();
-        })
-        .on('pointerover', () => {
-            this.sound.play('hover'); // Reproducir sonido al pasar el ratón por encima
-        });
+            .on('pointerdown', () => {
+                this.sound.play('select'); // Reproducir sonido de selección
+                this.switchExorcist();
+            })
+            .on('pointerover', () => {
+                this.sound.play('hover'); // Reproducir sonido al pasar el ratón por encima
+            });
 
         arrowLeft.setInteractive()
-        .on('pointerdown', () => {
-            this.sound.play('select'); // Reproducir sonido de selección
-            this.switchExorcist();
-        })
-        .on('pointerover', () => {
-            this.sound.play('hover'); // Reproducir sonido al pasar el ratón por encima
-        });
+            .on('pointerdown', () => {
+                this.sound.play('select'); // Reproducir sonido de selección
+                this.switchExorcist();
+            })
+            .on('pointerover', () => {
+                this.sound.play('hover'); // Reproducir sonido al pasar el ratón por encima
+            });
 
+
+
+        // boton start
+        const start_button = this.add.image(1300, 750, "bStart")
+            .setInteractive()
+            .on('pointerdown', () => {
+                this.sound.play("select");
+                // Enviar mensaje de Ready
+                this.gameOnlineScene.sendChosenSkin(this.animationKey)
+
+                // Mostrar texto
+                this.errorText.setText("Waiting other player...");
+                this.errorText.setAlpha(1); // Mostrar el mensaje
+
+                // Quitar interacción a este botón
+                start_button.removeInteractive()
+            }).on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            });
+        start_button.setScale(0.5, 0.5);
+
+        // Crear un cuadro de texto para mostrar errores
+        this.errorText = this.add.text(1300, 820, '', {
+            font: '24px Arial',
+            fill: '#000000',
+            fontFamily: 'Arial',
+            wordWrap: { width: 800, useAdvancedWrap: true }
+        }).setOrigin(0.5, 0.5).setAlpha(0); // Inicialmente invisible
+
+    }
+
+    stopScene() {
+        this.scene.stop("ExorcistSkin")
     }
 
     createExorcistSprite() {
@@ -83,11 +121,11 @@ class ExorcistSkin extends Phaser.Scene {
 
         // Crear nuevo sprite basado en el demonio activo
         const exorcistKey = this.activeExorcist === 1 ? 'exorcist1' : 'exorcist2';
-        const animationKey = this.activeExorcist === 1 ? 'exorcist1Anim' : 'exorcist2Anim';
+        this.animationKey = this.activeExorcist === 1 ? 'exorcist1Anim' : 'exorcist2Anim';
 
         this.exorcistSprite = this.add.sprite(960, 570, exorcistKey);
         this.exorcistSprite.setScale(0.25);
-        this.exorcistSprite.play(animationKey);
+        this.exorcistSprite.play(this.animationKey);
     }
 
     switchExorcist() {
