@@ -85,7 +85,7 @@ class ExorcistSkin extends Phaser.Scene {
             .setInteractive()
             .on('pointerdown', () => {
                 this.sound.play("select");
-                // Enviar mensaje de Ready
+                // Enviar skin al sever. Mensaje tipo 's'
                 this.gameOnlineScene.sendChosenSkin(this.animationKey)
 
                 // Mostrar texto

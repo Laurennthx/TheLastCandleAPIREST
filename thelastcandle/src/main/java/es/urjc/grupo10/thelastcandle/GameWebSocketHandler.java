@@ -20,7 +20,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     private final Map<String, Game> games = new ConcurrentHashMap<>();
     private final Queue<WebSocketSession> waitingPlayers = new ConcurrentLinkedQueue<>();
     private final ObjectMapper mapper = new ObjectMapper();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     /**
      * Represents a player in the game with their position, score, and WebSocket
@@ -30,9 +29,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         WebSocketSession session;
         double x;
         double y;
-        int playerId;
-        int ready;
-        String skin;
+        int playerId;   // 1 exorcista. 2 Demonio
+        int ready;  // 1 es que ha cargado la escena. 2 es que está listo para comenar la partida
+        String skin;    // Skin o animación escogida (selección de personaje)
 
         Player(WebSocketSession session) {
             this.session = session;
@@ -50,15 +49,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         Player player2;
 
         List<Candle> candles; // Velas de la partida
-        int nCandles;
+        int nCandles;   // Número de velas a spawnear en la partida
         List<Integer> rituals; // Velas de la partida
-        Crucifix crucifix;
-        Boolean lightState;
+        Crucifix crucifix;  // Crucifijo con sus datos
+        Boolean lightState; // Estado de las luces
 
-        int started;
-
-        int timeForCrucifix = 10; // Tiempo para que salga el crucifijo
-        ScheduledFuture<?> timerTask;
+        int started;    // 0 selección. 1 comenzada. 2 finalizada
 
         Game(Player player1, Player player2) {
             this.player1 = player1;
@@ -129,16 +125,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     // #region COMENZAR
 
-    // 1º Sala de espera
-    // 2º Se hace un checkAndCreateGame() para detectar que hay dos jugadores.
-    // y así comenzar la selección de personajes.
-    // 3º Los jugadores indican que están listos y envían un mensaje al servidor.
-    // 4º El servidor los recive y comienza la pantalla de loading.
-    // 5º Entran en la escena de GameOnline y se pausa (sigue el mensaje de
-    // loading).
-    // 6º Envían otro mensaje para indicar que ya han cargado todo
-    // 7º El servidor envía la información de inicio y comienza el juego
-
     /**
      * Attempts to create a new game if there are at least 2 players waiting.
      * Sets up initial player positions and starts the game.
@@ -152,11 +138,6 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
                 Player player1 = players.get(session1.getId());
                 Player player2 = players.get(session2.getId());
-
-                player1.x = 100; // Left side of screen
-                player1.y = 300; // Middle height
-                player2.x = 700; // Right side of screen
-                player2.y = 300; // Middle height
 
                 Game game = new Game(player1, player2);
                 games.put(session1.getId(), game);
@@ -226,71 +207,71 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             String data = payload.length() > 1 ? payload.substring(1) : "";
 
             switch (type) {
-                case 'p': // Position update. De cliente a servidor es la posición en X e Y
-                    List<Integer> pos = mapper.readValue(data, List.class);
+                case 'p': // Position update.
+                    List<Integer> pos = mapper.readValue(data, List.class); // Data es la posición x e y del jugador
                     currentPlayer.x = pos.get(0);
                     currentPlayer.y = pos.get(1);
                     // Enviar la información al otro jugador
                     sendToPlayer(otherPlayer, "p",
-                            Arrays.asList(currentPlayer.playerId, currentPlayer.x, currentPlayer.y));
+                            Arrays.asList(currentPlayer.playerId, currentPlayer.x, currentPlayer.y));   // Id y posición del jugador a actualizar
                     break;
                 case 'v': // Recolección de velas. Actualizar la vela recogida y la puntuación
-                    Integer candleRemoved = mapper.readValue(data, Integer.class);
-                    if (game.candles.get(candleRemoved - 1).id != -1) { // NOTA: es necesario este if?
+                    Integer candleRemoved = mapper.readValue(data, Integer.class);  // Data es el id de la vela recogida
+                    if (game.candles.get(candleRemoved - 1).id != -1) { 
                         game.candles.get(candleRemoved - 1).id = -1;
-                        sendToPlayer(currentPlayer, "v", candleRemoved);
+                        sendToPlayer(currentPlayer, "v", candleRemoved);    // Id de la vela recogida
                         sendToPlayer(otherPlayer, "v", candleRemoved);
                     }
                     break;
                 case 'l': // Colocar vela en ritual
-                    Integer ritualRemoved = mapper.readValue(data, Integer.class);
+                    Integer ritualRemoved = mapper.readValue(data, Integer.class);  // Id del ritual en el que se ha colocado una vela
                     if (game.rituals.get(ritualRemoved - 1) != -1) { // Si no tienen el valor -1 es que todavía no han
                                                                      // sido usados
                         game.rituals.set(ritualRemoved - 1, -1);
-                        sendToPlayer(currentPlayer, "l", ritualRemoved);
+                        sendToPlayer(currentPlayer, "l", ritualRemoved);    // Id del ritual en el que se ha colocado una vela
                         sendToPlayer(otherPlayer, "l", ritualRemoved);
                     }
                     break;
                 case 'x': // Obtener crucifijo
                     if (game.crucifix.picked == false) {
                         game.crucifix.picked = true;
-                        sendToPlayer(currentPlayer, "x", null);
+                        sendToPlayer(currentPlayer, "x", null); // Solo indicar que se ha obtenido el crucifijo
                         sendToPlayer(otherPlayer, "x", null);
                     }
                     break;
                 case 't': // Interactuar con las luces
-                    Boolean desiredLights = Boolean.parseBoolean(data);
+                    Boolean desiredLights = Boolean.parseBoolean(data); // Estado de las luces que se quiere poner
                     if (desiredLights != game.lightState) {
                         game.lightState = desiredLights;
                         if (desiredLights) {
-                            sendToPlayer(currentPlayer, "t", true);
+                            sendToPlayer(currentPlayer, "t", true); // True (encender las luces)
                             sendToPlayer(otherPlayer, "t", true);
                         } else {
-                            sendToPlayer(currentPlayer, "t", false);
+                            sendToPlayer(currentPlayer, "t", false);    // False (apagar las luces)
                             sendToPlayer(otherPlayer, "t", false);
                         }
                     }
                     break;
-                case 'r': // Un jugador está ready
-                    currentPlayer.ready++;
+                case 'r': // Indica que un jugador está ready. Si los jugadores está ready dos veces, empieza la partida
+                    currentPlayer.ready++;  // Actualizar el estado 'ready' de cada jugador en el server
                     if (currentPlayer.ready == 1 && otherPlayer.ready == 1) {
-                        // Los dos jugadores han cargado la escena
-                        sendToPlayer(currentPlayer, "r", 1);
+                        // Los dos jugadores han cargado la escena. Comienza la selección de personaje
+                        sendToPlayer(currentPlayer, "r", 1);    // Estado del juego, 1 (selección)
                         sendToPlayer(otherPlayer, "r", 1);
                     } 
                     else if (currentPlayer.ready == 2 && otherPlayer.ready == 2) {
                         // Los dos jugadores están listos para comenzar.
                         game.started = 1; // Indicar que la partida ha empezado
-                        sendToPlayer(currentPlayer, "r", 2);
+                        sendToPlayer(currentPlayer, "r", 2);    // Estado del juego, 2 (comenzar partida)
                         sendToPlayer(otherPlayer, "r", 2);
                     }
                     break;
-                case 's': // Skin recibida
-                    String skinSelected = data;
+                case 's': // Skin recibida. Una vez recibidas ambas skins, se devuelven a los jugadores.
+                    String skinSelected = data; // Nombre de la skin seleccionada
                     currentPlayer.skin = skinSelected;
                     if (otherPlayer.skin != null) { // Si los dos jugadores han escogido ya su skin. Enviar las skins
                         if (currentPlayer.playerId == 1) {
-                            sendToPlayer(currentPlayer, "s", Arrays.asList(currentPlayer.skin, otherPlayer.skin));
+                            sendToPlayer(currentPlayer, "s", Arrays.asList(currentPlayer.skin, otherPlayer.skin));  // Skins de los jugadores 1 y 2
                             sendToPlayer(otherPlayer, "s", Arrays.asList(currentPlayer.skin, otherPlayer.skin));
                         } else {
                             sendToPlayer(currentPlayer, "s", Arrays.asList(otherPlayer.skin, currentPlayer.skin));
@@ -298,8 +279,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                         }
                     }
                     break;
-                case 'o': // Un jugador está ready
-                    Integer winningId = mapper.readValue(data, Integer.class);
+                case 'o': // El exorcista ha completado el ritual o el demonio ha matado
+                    Integer winningId = mapper.readValue(data, Integer.class);  // Id del jugador ganador
                     if (game.started == 1) { // Solo si la partida está en curso
                         game.started = 2; // Indicar que ha finalizado
                         endGame(game, winningId);
@@ -336,8 +317,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * Ends the game by sending winning player and cleaning up game resources.
-     * Message format 'o': Game over with the id of the winning player
+     * Type 'o'
+     * @param game Estado de la partida, si ha iniciado es mayor que 0. Selección de personaje = 0
+     * @param id Jugador ganador
      */
     private void endGame(Game game, int id) {
         if (game.started == 0) {

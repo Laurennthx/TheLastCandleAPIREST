@@ -1242,26 +1242,41 @@ class GameOnlineScene extends Phaser.Scene {
         };
     }
 
-    // type 'i'. Definir si este jugador es exorcista o demonio. Inicia la selección de personaje
+    /*  Inicio de la escena, NO del juego.
+     *  type 'i'. Definir si este jugador es exorcista o demonio.
+     *  Manda un mensaje de tipo 'r' (ready) para indicar que este jugador
+     *  ha cargado la escena del juego.
+     *  Activa la selección de personaje
+     */
     handleInit(data) {
-        this.playerId = data    // 1: exorcista. 2: demonio
+        // Data es un int que identifica al jugador como exorcista o demonio, 1 o 2 respectivamente
+        this.playerId = data
         console.log("Jugador: " + this.playerId)
         this.iniciarControles()
-        this.sendMessage(MSG_TYPES.READY)   // Enviar la primera señal de ready
+        this.sendMessage(MSG_TYPES.READY)   // Enviar la primera señal de ready. Tipo 'r'
         if (this.playerId == 1) {   // Le ha tocado exorcista
             this.otherPlayer = this.demon
-            this.scene.launch('ExorcistSkin')
         }
         else if (this.playerId == 2) {  // Le ha tocado demonio
             this.otherPlayer = this.exorcist
-            this.scene.launch('DemonSkin')
         }
     }
 
-    // type 'r'
+    /*  Comrobaciones para ver si los juagdores están listos.
+     *  type 'r'. Si data == 1 significa que ambos jugadores han
+     *  cargado la escena del juego y pasan a la selección de personaje.
+     *  Si data == 2, el juego comienza. Se despausa la escena del juego,
+     *  comienza el timer del crucifijo, y se cierra la selección de personaje. 
+     */
     handleReady(data) {
         if (data == 1) {
             console.log("Escenas cargadas")
+            if (this.playerId == 1) {   // Si es exorcista...
+                this.scene.launch('ExorcistSkin')
+            }
+            else if (this.playerId == 2) {  // Si es demonio...
+                this.scene.launch('DemonSkin')
+            }
         }
         else if (data == 2) {
             // NOTA: quitar la escena de selección de personaje
@@ -1280,12 +1295,23 @@ class GameOnlineScene extends Phaser.Scene {
         }
     }
 
+    /*
+     * ENVIO de tipo 's'
+     * Enviar al servidor la skin que se ha seleccionado desde
+     * la escena de selección de personaje.
+     */
     sendChosenSkin(skinName) {
         this.sendMessage(MSG_TYPES.SKIN, skinName)   // Enviar la skin seleccionada
     }
 
     // #region ANIMACIONES
-    // type 's'
+    /*
+     * Type 's'
+     * Recibe las skins de cada jugador y le asigna las animaciones
+     * a los objetos exorcista y demonio.
+     * Por último envía la segunda señal de ready para indicar
+     * que este jugador está listo para comenzar la partida. Tipo 'r'
+     */
     handleSkinSelection(data) {    // nombres de las skins escogidas
         const exorcistSkin = data[0]
         const demonSkin = data[1]
@@ -1313,9 +1339,8 @@ class GameOnlineScene extends Phaser.Scene {
         this.sendMessage(MSG_TYPES.READY)
     }
 
-    // type 'p'
     /**
-     * Updates the position of the opponent player.
+     * Type 'p'. Updates the position of the opponent player.
      * @param {Array} data Position data [playerId, x, y]
      */
     handlePosition(data) {
@@ -1342,10 +1367,12 @@ class GameOnlineScene extends Phaser.Scene {
             this.otherPlayer.x = x;
             this.otherPlayer.y = y;
 
-            // Si pasa un tiempo sin recibir una actualización, se pausa la animación
+            // Crea un timer para que se pausa la animación si no recibe ninguna actualización
+            // en un tiempo.
             if (this.inactivityTimeout) {
                 clearTimeout(this.inactivityTimeout);
             }
+            // Si pasa un tiempo sin recibir una actualización, se pausa la animación
             this.inactivityTimeout = setTimeout(() => {
                 // Detener la animación si no hay nuevas actualizaciones
                 if (data[0] === 1) {
@@ -1353,11 +1380,14 @@ class GameOnlineScene extends Phaser.Scene {
                 } else if (data[0] === 2) {
                     this.otherPlayer.anims.stop(this.chosenAnimDe, true);
                 }
-            }, this.POSITION_UPDATE_INTERVAL * 2);
+            }, this.POSITION_UPDATE_INTERVAL * 2)   // Para en caso de no recibir mensaje en "2 * tics" del envío de la posición
         }
     }
 
-    // type 'c'
+    /* type 'c'. Generación de las velas
+    * Data es una lista de los ids y posiciones de las velas.
+    * Crea las velas en las posiciones recibidas.
+    */
     handleCandleSpawn(data) {
         data.forEach(candleData => {
             this.createCandle(candleData[0], candleData[1], candleData[2])
@@ -1379,7 +1409,11 @@ class GameOnlineScene extends Phaser.Scene {
         this.marcoCamera.ignore(candle)
     }
 
-    // type 'v'
+    /**
+     * type 'v'. Coger una vela
+     * @param {int} data Id de la vela que se ha quitado
+     * Quita la vela del escenario y actualiza el contador.
+     */
     handleCandleCollection(data) {
         const id = data
         this.candleCount++
@@ -1393,7 +1427,11 @@ class GameOnlineScene extends Phaser.Scene {
         this.candleIcon.setVisible(true); // Mostrar el icono
     }
 
-    // type 'l'
+    /**
+     * type 'l'. Poner una vela en un ritual
+     * @param {int} data Id del ritual sobre el que se posiciona la vela
+     * Recibe el id del ritual sobre el que se ha colocado una vela
+     */
     handlePlaceCandle(data) {
         const ritual = this.rituals[data - 1]
 
@@ -1422,7 +1460,10 @@ class GameOnlineScene extends Phaser.Scene {
         this.checkCompletedRituals();
     }
 
-    // type 'g'
+    /**
+     * Type 'g'. Posición en la que se generará el crucifijo
+     * @param {x, y} data 
+     */
     handleGenCrucifix(data) {
         const x = data[0]
         const y = data[1]
@@ -1431,7 +1472,9 @@ class GameOnlineScene extends Phaser.Scene {
         this.crucifix.visible = false
     }
 
-    // type 'x'
+    /* type 'x'. Coger cucifijo
+    * Recibe que el crucifijo ha sido obtenido por el exorcista. Activa el aura de protección
+    */
     handleCrucifixCollection() {
         this.crucifix.destroy()
         this.aura.setRadius(75).setIntensity(6) // Poner el radio a 75 para que sea visible el aura. Para quitarla poner el radio a 0
@@ -1440,6 +1483,11 @@ class GameOnlineScene extends Phaser.Scene {
         this.sound.play("crucifix"); // Reproducir sonido al recoger la vela
     }
 
+    /**
+     * Type 't'. Interacción con interruptores
+     * @param {boolean} data Estado de las luces desde el punto de vista del exorcista.
+     * True: encender las luces. False: apagar las luces
+     */
     handleLightSwitch(data) {
         if (data == true) {
             this.encenderLuces()
@@ -1449,7 +1497,12 @@ class GameOnlineScene extends Phaser.Scene {
         }
     }
 
-    // type 'o'
+    /**
+     * Type 'o'. Game over
+     * @param {int, int} data Data[0] = estado de la partida. Data[1] jugador ganador
+     * Si data[0] es == 0 un jugador ha dejado la partida durante la selección de personaje.
+     * Si data[0] > 0 un jugador ha dejado la partida durante el juego o ha ganado alguien.
+     */
     handleOver(data) {
         if (data == 0) {   // Está en selección de personaje y un jugador ha dejado la partida
             // Cargar escena de que un jugador ha dejado la partida
@@ -1459,6 +1512,7 @@ class GameOnlineScene extends Phaser.Scene {
                 const characterScene = this.scene.get('ExorcistSkin');
                 characterScene.stopScene()
                 this.scene.stop("GameOnlineScene");
+                // NOTA: cambiar por una escena nueva que indique que otro jugador ha dejado la partida
                 this.scene.start("ExorcistWinsScene")
                 this.ritualCount = 0; // Reinicia el contador de rituales
                 this.candleCount = 0; // Reinicia el contador de velas
@@ -1468,6 +1522,7 @@ class GameOnlineScene extends Phaser.Scene {
                 const characterScene = this.scene.get('DemonSkin');
                 characterScene.stopScene()
                 this.scene.stop("GameOnlineScene");
+                // NOTA: cambiar por una escena nueva que indique que otro jugador ha dejado la partida
                 this.scene.start("EndScene")
                 this.ritualCount = 0; // Reinicia el contador de rituales
                 this.candleCount = 0; // Reinicia el contador de velas
