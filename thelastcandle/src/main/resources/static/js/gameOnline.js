@@ -118,7 +118,7 @@ class GameOnlineScene extends Phaser.Scene {
         const zoomCamara = 4
         this.bgContainer = this.add.container(0, 0)
         // Crear el mapa como fondo, dimensiones: 9962 x 15522
-        const background = this.add.image(0, 0, 'background4').setOrigin(0, 0)
+        const background = this.add.image(0, 0, 'background5').setOrigin(0, 0)
         const alturaBg = 15522; // La altura original de la imagen grande sobre la que se ha puesto el resto de sprites. Reduce el tiempo de carga
         this.escalaBg = this.scale.height / alturaBg
 
@@ -177,6 +177,15 @@ class GameOnlineScene extends Phaser.Scene {
         const collider34 = this.createCollider(1290, 12608, 2876, 168)
         const collider35 = this.createCollider(1274, 10498, 170, 2286)
         const collider36 = this.createCollider(100, 10489, 1776, 193)
+        //Colliders objetos
+        const collidero1 = this.createCollider(1884, 1428, 1150, 496)
+        const collidero2 = this.createCollider(3672, 1302, 324, 510)
+        const collidero3 = this.createCollider(4158, 1524, 1482, 2)
+        const collidero4 = this.createCollider(5790, 1038, 780, 536)
+        const collidero5 = this.createCollider(7700, 1464, 870, 588) 
+        const collidero6 = this.createCollider(6990, 1470, 456, 4)
+        const collidero7 = this.createCollider(1448, 11350, 412, 1516)
+        const collidero9 = this.createCollider(3016, 10900, 432, 2)
 
         // RITUALES
         this.grupoRituales = this.physics.add.group()

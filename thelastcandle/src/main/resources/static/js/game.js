@@ -53,7 +53,7 @@ class GameScene extends Phaser.Scene {
 
         this.bgContainer = this.add.container(0, 0)
         // Crear el mapa como fondo, dimensiones: 9962 x 15522
-        const background = this.add.image(0, 0, 'background4').setOrigin(0, 0)
+        const background = this.add.image(0, 0, 'background5').setOrigin(0, 0)
         const alturaBg = 15522; // La altura original de la imagen grande sobre la que se ha puesto el resto de sprites. Reduce el tiempo de carga
         this.crucifix = this.physics.add.sprite(0, 0, 'crucifix').setOrigin(0, 0)    // Iniciar el crucifijo en cualquier parte
         this.escalaBg = this.scale.height / alturaBg
@@ -110,15 +110,14 @@ class GameScene extends Phaser.Scene {
         const collider35 = this.createCollider(1274, 10498, 170, 2286)
         const collider36 = this.createCollider(100, 10489, 1776, 193)
         //Colliders objetos
-        const collidero1 = this.createCollider(1912, 1440, 1392, 1160)
-        const collidero2 = this.createCollider(4158, 1548, 823, 468)
-        const collidero3 = this.createCollider(5238, 1416, 324, 654)
-        const collidero4 = this.createCollider(5916, 1050, 888, 1248)
-        const collidero5 = this.createCollider(7444, 1482, 792, 1188) 
-        const collidero6 = this.createCollider(6992, 1493, 373, 498)
-        const collidero7 = this.createCollider(3541, 1143, 374, 1165)
-        const collidero8 = this.createCollider(1464, 11350, 384, 1422)
-        const collidero9 = this.createCollider(3016, 11350, 432, 592)
+        const collidero1 = this.createCollider(1884, 1428, 1150, 496)
+        const collidero2 = this.createCollider(3672, 1302, 324, 510)
+        const collidero3 = this.createCollider(4158, 1524, 1482, 2)
+        const collidero4 = this.createCollider(5790, 1038, 780, 536)
+        const collidero5 = this.createCollider(7700, 1464, 870, 588) 
+        const collidero6 = this.createCollider(6990, 1470, 456, 4)
+        const collidero7 = this.createCollider(1448, 11350, 412, 1516)
+        const collidero9 = this.createCollider(3016, 10900, 432, 2)
 
 
         // RITUALES
