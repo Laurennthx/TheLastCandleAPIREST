@@ -6,7 +6,7 @@ class DemonSkin extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("bStart", 'assets/UI/start.png');
+        this.load.image("StartText", 'assets/UI/skin/StartText.png');
 
         this.load.audio("select", 'assets/Music/effects/click/oldRadio.mp3');
         this.load.audio("hover", 'assets/Music/effects/click/darkButton.mp3');
@@ -78,32 +78,41 @@ class DemonSkin extends Phaser.Scene {
                 this.sound.play('hover'); // Reproducir sonido al pasar el ratón por encima
             });
 
-        // boton start
-        const start_button = this.add.image(1300, 750, "bStart")
-            .setInteractive()
-            .on('pointerdown', () => {
-                this.sound.play("select");
-                // Enviar skin al sever. Mensaje tipo 's'
-                this.gameOnlineScene.sendChosenSkin(this.animationKey)
+        // Botón start
+        const start_button = this.add.image(950, 995, "StartText")
+        .setInteractive()
+        .on('pointerdown', () => {
+            this.sound.play("select");
 
-                // Mostrar texto
-                this.errorText.setText("Waiting other player...");
-                this.errorText.setAlpha(1); // Mostrar el mensaje
+            // Enviar skin al servidor. Mensaje tipo 's'
+            this.gameOnlineScene.sendChosenSkin(this.animationKey);
 
-                // Quitar interacción a este botón
-                start_button.removeInteractive()
-            }).on('pointerover', () => {
-                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-            });
-        start_button.setScale(0.5, 0.5);
+            // Mostrar texto
+            this.errorText.setText("Waiting for the other player...");
+            this.errorText.setAlpha(1); // Mostrar el mensaje
+
+            // Quitar interacción a este botón
+            start_button.removeInteractive();
+
+            // Desactivar las flechas
+            arrowRight.removeInteractive();
+            arrowLeft.removeInteractive();
+        })
+        .on('pointerover', () => {
+            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+        });
+
+        start_button.setScale(0.7, 0.7);
+
 
         // Crear un cuadro de texto para mostrar errores
-        this.errorText = this.add.text(1300, 820, '', {
-            font: '24px Arial',
-            fill: '#000000',
-            fontFamily: 'Arial',
+        this.errorText = this.add.text(975, 1025, '', { // Ajusta la posición (x, y) del texto
+            font: '24px Courier New', // Cambia la fuente a Courier New
+            fill: '#FFFFFF', // Cambia el color del texto a blanco
+            fontFamily: 'Courier New', // Asegura el uso de la fuente tipo máquina de escribir
             wordWrap: { width: 800, useAdvancedWrap: true }
         }).setOrigin(0.5, 0.5).setAlpha(0); // Inicialmente invisible
+
 
     }
 
