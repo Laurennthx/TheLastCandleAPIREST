@@ -105,7 +105,7 @@ class GameOnlineScene extends Phaser.Scene {
 
     // #region CREATE
     create() {
-        this.loadingBg = this.add.image(this.scale.width / 2, this.scale.height / 2, 'LoadingBG').
+        this.loadingBg = this.add.image(this.scale.width / 2, this.scale.height / 2, 'LoadingOnlineBG').
             setOrigin(0.5).setDisplaySize(this.scale.width, this.scale.height);
         this.loadingBg.depth = 5000
         this.isPaused = false; // Estado inicial del juego no pausado

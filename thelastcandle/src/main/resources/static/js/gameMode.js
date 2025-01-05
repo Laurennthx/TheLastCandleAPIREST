@@ -37,7 +37,7 @@ class GameModeScene extends Phaser.Scene {
         .on('pointerdown', () => {
             this.sound.play("select");
             this.scene.stop("GameMode");
-            this.scene.start("LoadingScene",{ online: true });   
+            this.scene.start("LoadingOnlineScene",{ online: true });   
         }).on('pointerover', () => {
             this.sound.play("hover"); // Reproduce sonido al pasar el cursor
         });  
