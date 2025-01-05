@@ -5,6 +5,7 @@ class EndScene extends Phaser.Scene {
 
     preload() {
         this.load.image("endGameImage", "assets/UI/DemonWins.jpg");
+        this.load.image("endGameImage2", "assets/UI/DemonWins2.png");
         this.load.image("tryAgain", "assets/UI/tryAgain.png");
 
     }

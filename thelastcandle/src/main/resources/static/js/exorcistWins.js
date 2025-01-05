@@ -5,6 +5,7 @@ class ExorcistWinsScene extends Phaser.Scene {
 
     preload() {
         this.load.image("exorcistWinsBG", "assets/UI/ExorcistWins.jpg");
+        this.load.image(("exorcist2WinsBG", "assets/UI/Exorcist2Wins.png"));
         this.load.image("tryAgain", "assets/UI/tryAgain.png");
 
     }
