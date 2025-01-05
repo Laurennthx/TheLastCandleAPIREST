@@ -109,6 +109,17 @@ class GameScene extends Phaser.Scene {
         const collider34 = this.createCollider(1290, 12608, 2876, 168)
         const collider35 = this.createCollider(1274, 10498, 170, 2286)
         const collider36 = this.createCollider(100, 10489, 1776, 193)
+        //Colliders objetos
+        const collidero1 = this.createCollider(1912, 1440, 1392, 1160)
+        const collidero2 = this.createCollider(4158, 1548, 823, 468)
+        const collidero3 = this.createCollider(5238, 1416, 324, 654)
+        const collidero4 = this.createCollider(5916, 1050, 888, 1248)
+        const collidero5 = this.createCollider(7444, 1482, 792, 1188) 
+        const collidero6 = this.createCollider(6992, 1493, 373, 498)
+        const collidero7 = this.createCollider(3541, 1143, 374, 1165)
+        const collidero8 = this.createCollider(1464, 11350, 384, 1422)
+        const collidero9 = this.createCollider(3016, 11350, 432, 592)
+
 
         // RITUALES
         this.grupoRituales = this.physics.add.group()
