@@ -172,10 +172,11 @@ class GameScene extends Phaser.Scene {
 
         // MUEBLES
         this.muebles = [];  // Almacenar en un array. Si es en un container no funciona el depth
-        const bookshelf = this.add.image(5000, 6000, 'bookshelf').setOrigin(0, 0).setScale(3)   // La escala la he puesto a ojo
+        //const bookshelf = this.add.image(5000, 6000, 'bookshelf').setOrigin(0, 0).setScale(3)   // La escala la he puesto a ojo
+        const bookshelf1 = this.add.image(5000, 6000, 'bookshelf1').setOrigin(0, 0).setScale(1)   
 
         // Ajustar la posición y profundidad de cada objeto
-        this.muebles.push(bookshelf)
+        this.muebles.push(bookshelf1)
         this.muebles.forEach((mueble) => {
             mueble.setScale(this.escalaBg * mueble.scaleX)
             mueble.setPosition(mueble.x * this.escalaBg, mueble.y * this.escalaBg)
