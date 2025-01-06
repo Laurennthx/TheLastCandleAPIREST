@@ -138,8 +138,8 @@ class GameOnlineScene extends Phaser.Scene {
         this.velocidadReducida = 1
 
         const posInterruptores =
-            [[2660, 1240], [6512, 1240], [816, 2176],
-            [8698, 13040], [1542, 10940], [6190, 9139],
+            [[4020, 1940], [6512, 1240], [816, 2176],
+            [8698, 13040], [1542, 10940], [5840, 9139],
             [1906, 6976], [4440, 5451], [4734, 3677]]
 
 
@@ -188,7 +188,7 @@ class GameOnlineScene extends Phaser.Scene {
         const collidero6 = this.createCollider(6990, 1470, 456, 4)
         const collidero7 = this.createCollider(1448, 11350, 412, 1516)
         const collidero9 = this.createCollider(3016, 10900, 432, 2)
-
+        const collidero10 = this.createCollider(6130, 9000, 432, 2)
         // RITUALES
         this.grupoRituales = this.physics.add.group()
         const ritual1 = this.grupoRituales.create(512, 7843, 'block').setOrigin(0, 0).setImmovable(true)
