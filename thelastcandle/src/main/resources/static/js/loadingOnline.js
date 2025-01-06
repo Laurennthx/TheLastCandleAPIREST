@@ -5,7 +5,7 @@ class LoadingOnlineScene extends Phaser.Scene {
 
     preload() {
         // Carga la imagen de fondo para la pantalla de carga
-        this.load.image('LoadingOnlineBG', 'assets/UI/LoadingOnlineScene.jpg');
+        this.load.image('LoadingOnlineBG', 'assets/UI/loadingOnlineScene.jpg');
 
         // AUDIOS
         this.load.audio("pickUpCandle", 'assets/Music/effects/candle/putItem.mp3');
@@ -33,9 +33,14 @@ class LoadingOnlineScene extends Phaser.Scene {
         this.load.image('background2', 'assets/House/fondo3pentagonosPeque2.png')
         this.load.image('background3', 'assets/House/fondo3pentagonosPeque3.png')
         this.load.image('background4', 'assets/House/fondo3pentagonosPeque4.png')
+        this.load.image('background5', 'assets/House/fondo3pentagonosMueblesPeque4.png')
 
         // muebles
         this.load.image('bookshelf', 'assets/Decorations_hide/Bookshelf.png')
+        this.load.image('bookshelf1', 'assets/Decorations_hide/bookshelf1.png')
+        this.load.image('cupboardHL', 'assets/Decorations_hide/cupboardHLeft.png')
+        this.load.image('cupboardHR', 'assets/Decorations_hide/cupboardHRight.png')
+        this.load.image('cupboardV', 'assets/Decorations_hide/cupboardV.png')
 
 
         // crucifix
@@ -94,5 +99,9 @@ class LoadingOnlineScene extends Phaser.Scene {
         else {
             this.scene.start('GameScene');
         }
+    }
+
+    update() {
+
     }
 }

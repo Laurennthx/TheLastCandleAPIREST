@@ -37,10 +37,10 @@ class LoadingScene extends Phaser.Scene {
 
         // muebles
         this.load.image('bookshelf', 'assets/Decorations_hide/Bookshelf.png')
-        this.load.image('bookshelf1', 'assets/Decorations_hide/Bookshelf1.png')
-        this.load.image('cupboardHL', 'assets/Decorations_hide/CupboardHLeft.png')
-        this.load.image('cupboardHR', 'assets/Decorations_hide/CupboardHRight.png')
-        this.load.image('cupboardV', 'assets/Decorations_hide/CupboardV.png')
+        this.load.image('bookshelf1', 'assets/Decorations_hide/bookshelf1.png')
+        this.load.image('cupboardHL', 'assets/Decorations_hide/cupboardHLeft.png')
+        this.load.image('cupboardHR', 'assets/Decorations_hide/cupboardHRight.png')
+        this.load.image('cupboardV', 'assets/Decorations_hide/cupboardV.png')
 
         // crucifix
         this.load.image('crucifix', 'assets/Objects/crucifix.png')

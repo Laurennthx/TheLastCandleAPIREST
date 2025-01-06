@@ -301,7 +301,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.exorcist, this.interruptoresOn, this.cambiarInterruptores, null, this);
         this.physics.add.overlap(this.demon, this.interruptoresOn, this.cambiarInterruptores, null, this);
         // Collider del exorcista con el demonio, se podría quitar 
-        this.physics.add.collider(this.exorcist, this.demon, this.hitExorcist, null, this); // LLama a la función "hitExorcist" cuando colisionan
+        this.physics.add.overlap(this.exorcist, this.demon, this.hitExorcist, null, this); // LLama a la función "hitExorcist" cuando colisionan
         // Activar colisión entre las paredes y el exorcista
         this.physics.add.collider(this.exorcist, this.walls)
         // Activar colisión entre las paredes y el exorcista
