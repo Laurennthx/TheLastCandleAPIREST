@@ -24,6 +24,7 @@ class OptionsScene extends Phaser.Scene {
     }
 
     create() {
+        this.bgMusic = this.registry.get('bgMusic');
 
         // imagen de fondo
         const OptionsBG = this.add.image(0, 0, "OptionsBG").setOrigin(0, 0);
@@ -35,12 +36,7 @@ class OptionsScene extends Phaser.Scene {
             .setInteractive()
             .on('pointerdown', () => {
                 this.sound.play("select");
-                // Verifica si la música ya está inicializada y reproduciéndose
-                if (!this.bgMusic || !this.bgMusic.isPlaying) {
-                    this.bgMusic = this.sound.add('introMusic');
-                    this.bgMusic.loop = true;
-                    this.bgMusic.play();
-                }
+                this.bgMusic.play();
             })
             .on('pointerover', () => {
                 this.sound.play("hover"); // Reproduce sonido al pasar el cursor

@@ -113,6 +113,8 @@ class GameOnlineScene extends Phaser.Scene {
         // Connect to WebSocket
         this.socket = new WebSocket("ws://" + location.host + "/ws");
 
+        //Música
+        this.bgMusic = this.registry.get('bgMusic');
 
         // MUNDO
         const zoomCamara = 4
@@ -182,7 +184,7 @@ class GameOnlineScene extends Phaser.Scene {
         const collidero2 = this.createCollider(3672, 1302, 324, 510)
         const collidero3 = this.createCollider(4158, 1524, 1482, 2)
         const collidero4 = this.createCollider(5790, 1038, 780, 536)
-        const collidero5 = this.createCollider(7700, 1464, 870, 588) 
+        const collidero5 = this.createCollider(7700, 1464, 870, 588)
         const collidero6 = this.createCollider(6990, 1470, 456, 4)
         const collidero7 = this.createCollider(1448, 11350, 412, 1516)
         const collidero9 = this.createCollider(3016, 10900, 432, 2)
@@ -1537,29 +1539,29 @@ class GameOnlineScene extends Phaser.Scene {
         else if (data[0] > 0) { // Un jugador ha ganado
             var demonSkin   // Skin ganadora para la pantalla de victoria
             var exorcistSkin
-            if(this.chosenAnimDe == 'demon1Anim'){
+            if (this.chosenAnimDe == 'demon1Anim') {
                 demonSkin = 1
             }
-            else{
+            else {
                 demonSkin = 2
             }
-            if(this.chosenAnimEx == 'exorcist1Anim'){
+            if (this.chosenAnimEx == 'exorcist1Anim') {
                 exorcistSkin = 1
             }
-            else{
+            else {
                 exorcistSkin = 2
             }
             if (data[1] == 1) {   // Ha ganado el exorcista
                 this.scene.stop("GameOnlineScene");
                 this.sleepChat()
-                this.scene.start("ExorcistWinsScene", {skinId: exorcistSkin})
+                this.scene.start("ExorcistWinsScene", { skinId: exorcistSkin })
                 this.ritualCount = 0; // Reinicia el contador de rituales
                 this.candleCount = 0; // Reinicia el contador de velas
             }
             else if (data[1] == 2) {  // Ha ganado el demonio
                 this.scene.stop("GameOnlineScene");
                 this.sleepChat()
-                this.scene.start("EndScene", {skinId: demonSkin});
+                this.scene.start("EndScene", { skinId: demonSkin });
                 this.ritualCount = 0; // Reinicia el contador de rituales
                 this.candleCount = 0; // Reinicia el contador de velas
             }

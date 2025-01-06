@@ -7,6 +7,8 @@ class MenuScene extends Phaser.Scene {
     }
 
     preload() {
+        this.load.audio("introMusic", 'assets/Music/sinister.mp3');
+
         this.load.image("menuBG", 'assets/UI/BGpersonajes.jpg');
         this.load.image("bStart", 'assets/UI/start.png');
         this.load.image("bOptions", 'assets/UI/options.png');
@@ -25,6 +27,16 @@ class MenuScene extends Phaser.Scene {
 
 
     create() {
+        // Música
+        if(this.registry.get('bgMusic') === undefined){
+            console.log("Creando musica")
+            this.bgMusic = this.sound.add('introMusic');
+            this.bgMusic.loop = true;
+            this.bgMusic.play();
+            // Guardar la música en el registry
+            this.registry.set('bgMusic', this.bgMusic);
+        }
+
         // inmagen de fondo
         const backgroundMenu = this.add.image(0, 0, "menuBG").setOrigin(0, 0);
         backgroundMenu.setDisplaySize(1920, 1080);

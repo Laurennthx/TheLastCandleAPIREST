@@ -24,11 +24,6 @@ class WelcomeScene extends Phaser.Scene {
             currentUser: null, // Para guardar el usuario con el que se inicia sesión
         };
 
-        // musica
-        //this.bgMusic = this.sound.add('background');
-        //this.bgMusic.loop = true;
-        //this.bgMusic.play();
-
         // Detectar cualquier tecla presionada para avanzar de escena
         this.input.keyboard.on('keydown', () => {
             this.sound.play("select"); // sonido de selección

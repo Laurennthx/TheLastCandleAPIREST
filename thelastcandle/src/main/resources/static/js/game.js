@@ -45,8 +45,10 @@ class GameScene extends Phaser.Scene {
 
     // #region CREATE
     create() {
-
         this.isPaused = false; // Estado inicial del juego no pausado
+
+        //Música
+        this.bgMusic = this.registry.get('bgMusic');
 
         // MUNDO
         const zoomCamara = 4
