@@ -41,6 +41,10 @@ class LoadingOnlineScene extends Phaser.Scene {
         this.load.image('cupboardHL', 'assets/Decorations_hide/cupboardHLeft.png')
         this.load.image('cupboardHR', 'assets/Decorations_hide/cupboardHRight.png')
         this.load.image('cupboardV', 'assets/Decorations_hide/cupboardV.png')
+        this.load.image('couch', 'assets/Decorations_hide/sofa.png')
+        this.load.image('table', 'assets/Decorations_hide/mesaSalon.png')
+        this.load.image('dinningTable', 'assets/Decorations_hide/mesaComedor.png')
+        this.load.image('kitchenTable', 'assets/Decorations_hide/mesaCocina.png')
 
 
         // crucifix

@@ -174,10 +174,22 @@ class GameScene extends Phaser.Scene {
         // MUEBLES
         this.muebles = [];  // Almacenar en un array. Si es en un container no funciona el depth
         //const bookshelf = this.add.image(5000, 6000, 'bookshelf').setOrigin(0, 0).setScale(3)   // La escala la he puesto a ojo
-        const bookshelf1 = this.add.image(5000, 6000, 'bookshelf1').setOrigin(0, 0).setScale(1)   
+        const bookshelf1 = this.add.image(5000, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)  
+        const bookshelf2 = this.add.image(5650, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)
+        const bookshelf3 = this.add.image(7150, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)
+        const couch = this.add.image(5000, 11000, 'couch').setOrigin(0, 0).setScale(0.8)
+        const table = this.add.image(5330, 10650, 'table').setOrigin(0, 0).setScale(0.5)
+        const dinningTable = this.add.image(1400, 7800, 'dinningTable').setOrigin(0, 0).setScale(0.7)
+        const kitchenTable = this.add.image(5150, 6500, 'kitchenTable').setOrigin(0, 0).setScale(0.7)
 
         // Ajustar la posición y profundidad de cada objeto
         this.muebles.push(bookshelf1)
+        this.muebles.push(bookshelf2)
+        this.muebles.push(bookshelf3)
+        this.muebles.push(couch)
+        this.muebles.push(table)
+        this.muebles.push(dinningTable)
+        this.muebles.push(kitchenTable)
         this.muebles.forEach((mueble) => {
             mueble.setScale(this.escalaBg * mueble.scaleX)
             mueble.setPosition(mueble.x * this.escalaBg, mueble.y * this.escalaBg)
