@@ -45,6 +45,12 @@ class LoadingScene extends Phaser.Scene {
         this.load.image('table', 'assets/Decorations_hide/mesaSalon.png')
         this.load.image('dinningTable', 'assets/Decorations_hide/mesaComedor.png')
         this.load.image('kitchenTable', 'assets/Decorations_hide/mesaCocina.png')
+        this.load.image('box1', 'assets/Decorations_hide/caja1.png')
+        this.load.image('box2', 'assets/Decorations_hide/caja2.png')
+        this.load.image('box3', 'assets/Decorations_hide/caja3.png')
+        this.load.image('box4', 'assets/Decorations_hide/caja4.png')
+        this.load.image('box5', 'assets/Decorations_hide/caja5.png')
+        this.load.image('box6', 'assets/Decorations_hide/caja6.png')
         // crucifix
         this.load.image('crucifix', 'assets/Objects/crucifix.png')
 

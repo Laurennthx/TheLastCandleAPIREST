@@ -251,6 +251,12 @@ class GameOnlineScene extends Phaser.Scene {
         const table = this.add.image(5330, 10650, 'table').setOrigin(0, 0).setScale(0.5)
         const dinningTable = this.add.image(1400, 7800, 'dinningTable').setOrigin(0, 0).setScale(0.7)
         const kitchenTable = this.add.image(5150, 6500, 'kitchenTable').setOrigin(0, 0).setScale(0.7)
+        const box1 = this.add.image(716, 2576, 'box1').setOrigin(0, 0).setScale(0.7)
+        const box2 = this.add.image(9000, 13000, 'box2').setOrigin(0, 0).setScale(0.7)
+        const box3 = this.add.image(9000, 12660, 'box3').setOrigin(0, 0).setScale(0.7)
+        const box4 = this.add.image(8400, 13000, 'box4').setOrigin(0, 0).setScale(0.7)
+        const box5 = this.add.image(916, 2576, 'box5').setOrigin(0, 0).setScale(0.7)
+        const box6 = this.add.image(716, 3576, 'box6').setOrigin(0, 0).setScale(0.7)
 
         // Ajustar la posición y profundidad de cada objeto
         this.muebles.push(bookshelf1)
@@ -260,6 +266,12 @@ class GameOnlineScene extends Phaser.Scene {
         this.muebles.push(table)
         this.muebles.push(dinningTable)
         this.muebles.push(kitchenTable)
+        this.muebles.push(box1)
+        this.muebles.push(box2)
+        this.muebles.push(box3)
+        this.muebles.push(box4)
+        this.muebles.push(box5)
+        this.muebles.push(box6)
         this.muebles.forEach((mueble) => {
             mueble.setScale(this.escalaBg * mueble.scaleX)
             mueble.setPosition(mueble.x * this.escalaBg, mueble.y * this.escalaBg)
