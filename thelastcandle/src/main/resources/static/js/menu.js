@@ -28,7 +28,7 @@ class MenuScene extends Phaser.Scene {
 
     create() {
         // Música
-        if(this.registry.get('bgMusic') === undefined){
+        if (this.registry.get('bgMusic') === undefined) {
             console.log("Creando musica")
             this.bgMusic = this.sound.add('introMusic');
             this.bgMusic.loop = true;
@@ -117,6 +117,9 @@ class MenuScene extends Phaser.Scene {
                 this.sound.play("hover"); // Reproduce sonido al pasar el cursor
             });
         chatB.setScale(0.3);
+
+        // Timer para mostrar los usuarios conectados
+        this.connectedUsersTimer = null;
     }
 
     // Método para obtener los usuarios conectados
@@ -145,6 +148,7 @@ class MenuScene extends Phaser.Scene {
     // Método para mostrar los usuarios conectados
     showConnectedUsers(users) {
         if (users.length > 0) {
+            if(this.userList) this.userList.destroy()
             const usersText = users.join('\n');  // Unir los usuarios en una cadena
             this.userList = this.add.text(880, 300, usersText, {
                 fontSize: '45px',
@@ -172,8 +176,15 @@ class MenuScene extends Phaser.Scene {
         if (this.isChatActive) {
             // Si el chat está activado, obtener los usuarios conectados
             this.getConnectedUsers();
-            // Si el chat no está activo, lo activamos
-            this.isChatActive = true;
+            if (!this.connectedUsersTimer) {
+                // Un temporizador de unos 3 segundos para refrescar los usuarios conectados
+                this.connectedUsersTimer = this.time.addEvent({
+                    delay: 3000,
+                    callback: this.getConnectedUsers,
+                    callbackScope: this,
+                    loop: true
+                });
+            }
 
             if (!this.chatInitialized) {
                 this.chatInitialized = true;
@@ -189,6 +200,11 @@ class MenuScene extends Phaser.Scene {
             }
 
         } else {
+            // Detener el temporizador
+            if (this.connectedUsersTimer) {
+                this.connectedUsersTimer.remove();
+                this.connectedUsersTimer = null;
+            }
             // Si el chat se desactiva, ocultar los usuarios conectados
             this.userList.destroy();
             this.sleepChat()

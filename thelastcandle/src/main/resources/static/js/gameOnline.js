@@ -244,7 +244,7 @@ class GameOnlineScene extends Phaser.Scene {
         // MUEBLES
         this.muebles = [];  // Almacenar en un array. Si es en un container no funciona el depth
         //const bookshelf = this.add.image(5000, 6000, 'bookshelf').setOrigin(0, 0).setScale(3)   // La escala la he puesto a ojo
-        const bookshelf1 = this.add.image(5000, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)  
+        const bookshelf1 = this.add.image(5000, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)
         const bookshelf2 = this.add.image(5650, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)
         const bookshelf3 = this.add.image(7150, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)
         const couch = this.add.image(5000, 11000, 'couch').setOrigin(0, 0).setScale(0.8)
@@ -616,7 +616,6 @@ class GameOnlineScene extends Phaser.Scene {
 
 
         // #region CHAT
-        // IMPORTANTE: Quitar de cara a la FASE 5. Lo mismo que sus métodos!!!
         this.userList = "";
         this.isChatActive = false;
         this.chatInitialized = false;
@@ -712,6 +711,15 @@ class GameOnlineScene extends Phaser.Scene {
         this.isChatActive = !isVisible;
 
         if (this.isChatActive) {
+            if (!this.connectedUsersTimer) {
+                // Un temporizador de unos 3 segundos para refrescar los usuarios conectados
+                this.connectedUsersTimer = this.time.addEvent({
+                    delay: 3000,
+                    callback: this.getConnectedUsers,
+                    callbackScope: this,
+                    loop: true
+                });
+            }
             // Pausar los controles
             this.isPaused = this.isChatActive;
             this.resetKeys()
@@ -720,8 +728,6 @@ class GameOnlineScene extends Phaser.Scene {
 
             // Si el chat está activado, obtener los usuarios conectados
             this.getConnectedUsers();
-            // Si el chat no está activo, lo activamos
-            this.isChatActive = true;
             // Desactivar el botón de pausa
             this.pauseButton.removeInteractive();
             this.toggleInteractKeys(false)
@@ -741,6 +747,11 @@ class GameOnlineScene extends Phaser.Scene {
             }
 
         } else {
+            // Detener el temporizador
+            if (this.connectedUsersTimer) {
+                this.connectedUsersTimer.remove();
+                this.connectedUsersTimer = null;
+            }
             // Si el chat se desactiva, ocultar los usuarios conectados
             this.userList.destroy();
             this.sleepChat()
@@ -779,6 +790,7 @@ class GameOnlineScene extends Phaser.Scene {
     // Método para mostrar los usuarios conectados
     showConnectedUsers(users) {
         if (users.length > 0) {
+            if (this.userList) this.userList.destroy()
             const usersText = users.join('\n');  // Unir los usuarios en una cadena
             this.userList = this.add.text(680, 300, usersText, {
                 fontSize: '45px',

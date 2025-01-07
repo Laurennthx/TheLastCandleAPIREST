@@ -116,7 +116,7 @@ class GameScene extends Phaser.Scene {
         const collidero2 = this.createCollider(3672, 1302, 324, 510)
         const collidero3 = this.createCollider(4158, 1524, 1482, 2)
         const collidero4 = this.createCollider(5790, 1038, 780, 536)
-        const collidero5 = this.createCollider(7700, 1464, 870, 588) 
+        const collidero5 = this.createCollider(7700, 1464, 870, 588)
         const collidero6 = this.createCollider(6990, 1470, 456, 4)
         const collidero7 = this.createCollider(1448, 11350, 412, 1516)
         const collidero9 = this.createCollider(3016, 10900, 432, 2)
@@ -174,7 +174,7 @@ class GameScene extends Phaser.Scene {
         // MUEBLES
         this.muebles = [];  // Almacenar en un array. Si es en un container no funciona el depth
         //const bookshelf = this.add.image(5000, 6000, 'bookshelf').setOrigin(0, 0).setScale(3)   // La escala la he puesto a ojo
-        const bookshelf1 = this.add.image(5000, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)  
+        const bookshelf1 = this.add.image(5000, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)
         const bookshelf2 = this.add.image(5650, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)
         const bookshelf3 = this.add.image(7150, 12660, 'bookshelf1').setOrigin(0, 0).setScale(0.7)
         const couch = this.add.image(5000, 11000, 'couch').setOrigin(0, 0).setScale(0.8)
@@ -646,6 +646,15 @@ class GameScene extends Phaser.Scene {
         this.isChatActive = !isVisible;
 
         if (this.isChatActive) {
+            if (!this.connectedUsersTimer) {
+                // Un temporizador de unos 3 segundos para refrescar los usuarios conectados
+                this.connectedUsersTimer = this.time.addEvent({
+                    delay: 3000,
+                    callback: this.getConnectedUsers,
+                    callbackScope: this,
+                    loop: true
+                });
+            }
             // Pausar los controles
             this.isPaused = this.isChatActive;
             this.resetKeys()
@@ -654,8 +663,7 @@ class GameScene extends Phaser.Scene {
 
             // Si el chat está activado, obtener los usuarios conectados
             this.getConnectedUsers();
-            // Si el chat no está activo, lo activamos
-            this.isChatActive = true;
+
             // Desactivar el botón de pausa
             this.pauseButton.removeInteractive();
             this.toggleInteractKeys(false)
@@ -675,6 +683,11 @@ class GameScene extends Phaser.Scene {
             }
 
         } else {
+            // Detener el temporizador
+            if (this.connectedUsersTimer) {
+                this.connectedUsersTimer.remove();
+                this.connectedUsersTimer = null;
+            }
             // Si el chat se desactiva, ocultar los usuarios conectados
             this.userList.destroy();
             this.sleepChat()
@@ -713,6 +726,7 @@ class GameScene extends Phaser.Scene {
     // Método para mostrar los usuarios conectados
     showConnectedUsers(users) {
         if (users.length > 0) {
+            if (this.userList) this.userList.destroy()
             const usersText = users.join('\n');  // Unir los usuarios en una cadena
             this.userList = this.add.text(680, 300, usersText, {
                 fontSize: '45px',

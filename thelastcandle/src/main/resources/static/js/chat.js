@@ -79,6 +79,9 @@ class ChatScene extends Phaser.Scene {
             loop: true
         });
 
+        // Scroll al final del chat
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+
         this.changePos(posX, posY)
     }
 
