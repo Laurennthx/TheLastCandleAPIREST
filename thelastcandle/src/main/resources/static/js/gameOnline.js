@@ -545,6 +545,10 @@ class GameOnlineScene extends Phaser.Scene {
             this.scene.start("MenuScene");
             this.ritualCount = 0;
             this.candleCount = 0;
+            if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+                this.socket.close(); // Cierra la conexión WebSocket
+                console.log('Disconnected from server');
+            }
         }).on('pointerover', () => {
             this.sound.play("hover"); // Reproduce sonido al pasar el cursor  
         });
@@ -559,6 +563,10 @@ class GameOnlineScene extends Phaser.Scene {
             this.scene.start("GameModeScene");
             this.ritualCount = 0;
             this.candleCount = 0;
+            if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+                this.socket.close(); // Cierra la conexión WebSocket
+                console.log('Disconnected from server');
+            }
         }).on('pointerover', () => {
             this.sound.play("hover"); // Reproduce sonido al pasar el cursor
         });
