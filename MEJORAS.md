@@ -25,15 +25,16 @@ Se ha implementado un chat en tiempo real al que se puede acceder desde el menú
 
 
 ### Muebles del mapa
-Se han diseñado, texturizado e implementado los distintos muebles pertenecientes al mapa. En concreto, se han diseñado muebles con un estilo gótico, utilizando tonos oscuros que combinan con las paredes y el suelo del mapa. Los muebles cuentan con detalles de desgaste o de oxidación (en el caso de los muebles del baño) para remarcar el contexto de la historia de la mansión abandonada. 
+Se han diseñado, texturizado e implementado los distintos muebles pertenecientes al mapa para dotar a la casa de más variedad, verosimilitud y narrativa. En concreto, se han diseñado muebles con un estilo gótico, utilizando tonos oscuros que combinan con las paredes y el suelo del mapa. Los muebles cuentan con detalles de desgaste o de oxidación (en el caso de los muebles del baño) para remarcar el contexto de la historia de la mansión abandonada, además de diferentes cajas de mudanza distribuidas por el mapa que dan la sensación de mudanza inacabada aportando más a la historia.
+
+#### Escondites del mapa
+Varios de los muebles diseñiados, gracias a su envergadura y distribución en las habitaciones, pueden servir de escondite a los jugadores. Esto se ha implementado haciendo uso de las capas en las que estan distribuidos los elementos del juego y su profundidad, de esta forma, los jugadores podrán pasar a través de estos muebles y quedar ocultos tras estos, dando más posibilidades a los jugadores de interaccionar con el entorno.
 
 ***Imagen de los muebles implementados***
  
  ![Muebles1](imagenesGDD/MueblesFinales1.png)
 
-### Escondites del mapa
-Se han diseñado, texturizado e implementado diversos muebles que pueden servir a los jugadores de "escondite" en el caso de una persecución. Concretamente, se han implementado creando un array al que se le han añadido dichos muebles. 
-
+![MueblesFinales2](https://github.com/user-attachments/assets/7d27d50b-cb04-478c-8eb2-5f82f6985614)
 
 ## Plataformas
 A continuación se encuentran los enlaces con los que acceder al juego en las plataformas públicas seleccionadas:
