@@ -21,8 +21,8 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     // 1. El jugador pulsa el botón de "online".
     // 2. Cambia a la escena de "loadingOnline".
     // 3. Cuando termina la carga, cambia a la escena "GameOnline".
-    // 4. En la escena "GameOnline", el juego se pausa y muestra una imagen de
-    // "waiting" mientras espera que otro jugador se conecte.
+    // 4. En la escena "GameOnline", el juego se conecta al Websocket, se pausa y 
+    // muestra una imagen de "waiting" mientras espera que otro jugador se conecte.
     // 5. Cuando se conecta otro jugador, se abre la escena "ExorcistSkin" o
     // "DemonSkin" encima de "GameOnline" para seleccionar el personaje.
     // 6. El jugador selecciona un personaje en la escena de selección.

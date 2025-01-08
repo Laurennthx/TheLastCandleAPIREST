@@ -1,0 +1,10 @@
+0;andre;ja
+1;pepe;hola soy pepe
+2;andre;xao
+3;2;hey
+4;1;hola
+5;2;hey
+6;2;jeje
+7;1;jaja
+8;2;holaaa
+9;2;Voy a entrar
