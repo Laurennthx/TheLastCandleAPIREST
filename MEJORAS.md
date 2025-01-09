@@ -25,8 +25,11 @@ Se ha implementado un chat en tiempo real al que se puede acceder desde el menú
 
 
 ### Selección de skins
-Se han diseñado dos nuevas skins (una para el demonio y otra para el exorcista). 
+Se ha creado una skin nueva para cada personaje haciendo uso de algunos de los diseños descartados, junto con sus animaciones. Además de una escena de selección de skin para que el jugador elija. 
 
+![seleccionDemonio](https://github.com/user-attachments/assets/d43de35c-a916-4937-b8cd-8cfb0449c0d9)
+
+![seleccionExorcista](https://github.com/user-attachments/assets/9f1c4ea3-1eab-4f89-ae5e-276eefdf5fbd)
 
 ### Muebles del mapa
 Se han diseñado, texturizado e implementado los distintos muebles pertenecientes al mapa para dotar a la casa de más variedad, verosimilitud y narrativa. En concreto, se han diseñado muebles con un estilo gótico, utilizando tonos oscuros que combinan con las paredes y el suelo del mapa. Los muebles cuentan con detalles de desgaste o de oxidación (en el caso de los muebles del baño) para remarcar el contexto de la historia de la mansión abandonada, además de diferentes cajas de mudanza distribuidas por el mapa que dan la sensación de mudanza inacabada aportando más a la historia.
