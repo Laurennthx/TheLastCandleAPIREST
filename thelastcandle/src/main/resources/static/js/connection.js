@@ -56,7 +56,7 @@ class ConnectionManagerScene extends Phaser.Scene {
             url: "/api/users/" + username + "/keepAlive",
             method: "POST",
             success: () => {
-                console.log("Keep-alive del usuario con exito")
+                // Nada, que si no se llena mucho la consola
             },
             error: (xhr) => {
                 if (xhr.status === 404) {

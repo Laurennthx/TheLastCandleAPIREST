@@ -1,13 +1,7 @@
-0;andre;ja
-1;pepe;hola soy pepe
-2;andre;xao
-3;2;hey
-4;1;hola
-5;2;hey
-6;2;jeje
-7;1;jaja
-8;2;holaaa
-9;2;Voy a entrar
-10;2;usuario 2 está conectado :0
-11;2;Y el 1 sigue conectado
-12;andre;Probando
+0;roscon;hola soy un roscon
+1;mazapan;yo no
+2;mazapan;flipas
+3;mazapan;xao
+4;roscon;hola
+5;roscon;soy el demonio
+6;mazapan;yo el exorcista

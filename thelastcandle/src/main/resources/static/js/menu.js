@@ -191,12 +191,15 @@ class MenuScene extends Phaser.Scene {
                 // Obtener la instancia de ChatScene y inicializar el chat
                 this.chatScene = this.scene.get('ChatScene');
                 this.scene.launch("ChatScene", { posX: this.chatX, posY: this.chatY })   // Pasar su posición inicial
+                if(this.chatScene.changePos){
+                    this.chatScene.changePos(this.chatX, this.chatY)  
+                }
             }
             else {
                 this.scene.wake("ChatScene")    // Si está dormida se pausa su update y deja de enviar peticiones GET
                 // Una vez ya ha sido iniciada con launch, 
                 // se puede cambiar la posición del chat de esta manera
-                //this.chatScene.changePos(100, 100)  
+                this.chatScene.changePos(this.chatX, this.chatY)  
             }
 
         } else {

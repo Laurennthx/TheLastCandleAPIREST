@@ -316,8 +316,6 @@ class GameScene extends Phaser.Scene {
             }
         });
 
-
-        this.cursors = this.input.keyboard.createCursorKeys();
         // Configurar teclas - pulsar E para recoger vela - pulsar para toggle de los interruptores
         this.interactKeyEx = this.input.keyboard.addKey('E');
         this.interactKeyDe = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER)

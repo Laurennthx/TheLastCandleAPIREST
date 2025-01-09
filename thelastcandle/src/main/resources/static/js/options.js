@@ -154,7 +154,6 @@ class OptionsScene extends Phaser.Scene {
 
         // Variable para rastrear el campo de entrada actualmente activo
         this.currentField = null;
-
     }
 
     // Método para mostrar los errores en el cuadro de texto y hacer que desaparezca después de unos segundos

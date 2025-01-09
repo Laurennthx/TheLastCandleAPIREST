@@ -12,7 +12,9 @@ class ChatScene extends Phaser.Scene {
 
     // Útil para cambiar la posición del chat desde otra escena
     changePos(x, y) {
-        this.chatElement.setPosition(x, y)
+        if(this.chatElement){
+            this.chatElement.setPosition(x, y)
+        }
     }
 
 
@@ -34,10 +36,8 @@ class ChatScene extends Phaser.Scene {
     sendMessage() {
         const message = this.chatInput.value.trim();
         if (!message) return;
-
         // reproducir sonido
         this.soundSend.play();
-
 
         $.ajax({
             url: "/api/chat/",
@@ -50,7 +50,9 @@ class ChatScene extends Phaser.Scene {
             success: () => {
                 this.chatInput.value = "";
                 this.fetchMessages(this.chatMessages);
-                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                setTimeout(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                }, 100); // Un retraso de 100 ms
             },
             error: (xhr) => {
                 console.error("Error al enviar el mensaje:", xhr.responseText);
