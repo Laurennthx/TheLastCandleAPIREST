@@ -409,3 +409,174 @@ Para poder ejecutar el .jar del proyecto se tienen que realizar los siguientes p
 
 * **Ejecución**: el archivo .jar será ejecutado mediante: java - jar .\target\thelastcandle-0.0.1-SNAPSHOT.jar.original
 
+
+
+# FASE 4: WEBSOCKETS
+
+## Protocolo de comunicación
+
+Este apartado explica el protocolo usado para la comunicación de Websockets para nuestro juego. Para comunicarse entre cliente y servidor el protocolo usa diferentes tipos de mensajes los cuales están formados por un único caracter para indicar su tipo, pudiendo enviar también información adicional. A continuación se explicarán los diferentes tipos de mensajes:
+
+### 1. **Inicialización (`i`):**
+
+- **Tipo:** `i`
+- **Descripción:** Enviado por el servidor para indicar a qué jugador le ha tocado ser exorcista o demonio.
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  <playerId>
+  ```
+  - `playerId`: El id del jugador: 1 si es exorcista, 2 si es demonio.
+
+### 2. **Player ready (`r`):**
+
+- **Tipo:** `r`
+- **Descripción:** Mensajes para indicar que los jugadores están listos para avanzar de fases. Cuando los dos jugadores están listos por primera vez, pasan a la selección de personaje. Cuando los dos jugadores están listos por segunda vez, comienza la partida.
+- **Formato de Datos (Cliente a servidor):** 
+  ```json
+  null (mensaje vacío)
+  ```
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  <gameState>
+  ```
+  - `gameState`: Un int para indicar con 1 que los dos jugadores están listos para seleccionar personaje, y con 2 para indicar que pueden empezar la partida.
+
+### 3. **Skin seleccionada (`s`):**
+
+- **Tipo:** `s`
+- **Descripción:** Enviado por el usuario para que el servidor almacene el personaje que ha escogido. Enviado por el servidor para devolver los dos personajes a ambos jugadores y así actualizar las animaciones que tendrá cada personaje.
+- **Formato de Datos (Cliente a servidor):**
+  ```json
+  <skinName>
+  ```
+  - `skinName`: Nombre de la skin / personaje seleccionado.
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  [skinJ1, skinJ2]
+  ```
+  - `skinJ1`, `skinJ2`: Nombres de las skins / personajes escogidos por los dos jugadores.
+
+### 4. **Actualización de posición (`p`):**
+
+- **Tipo:** `p`
+- **Descripción:** Enviado por el cliente para comunicar su posición, o por el servidor para comunicar la posición del otro jugador.
+- **Formato de Datos (Cliente a servidor):**
+  ```json
+  [x, y]
+  ```
+  - `x`, `y`: Las nuevas coordenadas de posición del jugador.
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  [playerId, x, y]
+  ```
+  - `playerId`: ID del jugador al que se le va a actualizar la posición.
+  - `x`, `y`: Las nuevas coordenadas de posición de ese jugador.
+
+### 5. **Generación de velas (`c`):**
+
+- **Tipo:** `c`
+- **Descripción:** El servidor genera la posición de las velas en el mapa y las envía a los jugadores para que se vean reflejadas en sus pantallas.
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  [[candleId, x, y], ..., [candleIdn, xn, yn]]
+  ```
+  - `candleId`: Id de la vela, útil para su posterior recolección.
+  - `x`, `y`: Posición de las velas en coordenadas del mapa.
+
+### 6. **Recolección de velas (`v`):**
+
+- **Tipo:** `v`
+- **Descripción:** Enviado por el exorcista para indicar que quiere coger una vela. Enviado por el servidor a ambos jugadores para eliminar la vela recogida.
+- **Formato de Datos (Cliente a servidor):**
+  ```json
+  <candleId>
+  ```
+  - `candleId`: Id de la vela que se quiere recoger.
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  <candleId>
+  ```
+  - `candleId`: Id de la vela a eliminar del mapa.
+
+### 7. **Activar ritual (`l`):**
+
+- **Tipo:** `l`
+- **Descripción:** Enviado por el exorcista para indicar que quiere encender un ritual. Enviado por el servidor a ambos jugadores para activar el ritual.
+- **Formato de Datos (Cliente a servidor):**
+  ```json
+  <ritualId>
+  ```
+  - `ritualId`: Id del ritual que se quiere encender.
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  <ritualId>
+  ```
+  - `ritualId`: Id del ritual que se va a encender y deshabilitar.
+ 
+### 8. **Generación del crucifijo (`g`):**
+
+- **Tipo:** `g`
+- **Descripción:** Enviado por el servidor a ambos juagdores para indicar la posición en la que se generará el crucifijo en el mapa.
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  [x, y]
+  ```
+  - `x`, `y`: Coordenadas de posición donde se generará el crucifijo tras unos segundos de partida.
+
+### 9. **Recolección del crucifijo (`x`):**
+
+- **Tipo:** `x`
+- **Descripción:** Enviado por el exorcista al colisionar con el crucifijo. Enviado por el servidor a ambos juagdores para aplicar los efectos y quitar el crucifijo del mapa.
+- **Formato de Datos (Cliente a servidor):**
+  ```json
+  null (mensaje vacío)
+  ```
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  null (mensaje vacío)
+  ```
+
+### 10. **Activar las luces (`t`):**
+
+- **Tipo:** `t`
+- **Descripción:** Enviado por el jugador para indicar que quiere cambiar las luces. Enviado por el servidor a ambos juagdores para cambiar el estado de las luces.
+- **Formato de Datos (Cliente a servidor):**
+  ```json
+  <lightState>
+  ```
+  - `lightState`: True o False. Verdadero si se quieren encender las luces desde el punto de vista del exorcista, falso si se quieren apagar las luces desde el punto de vista del exorcista (lo que sería encender las luces del demonio).
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  <lightState>
+  ```
+  - `lightState`: True o False, igual que el de cliente a servidor.
+
+### 11. **Fin de la partida (`o`):**
+
+- **Tipo:** `o`
+- **Descripción:** Enviar por el jugador para indicar que va a ganar. Enviado por el servidor para gestionar desconexiones y el jugador ganador. Envía el estado de la partida, 0 si están en selección de personaje y más de 0 si ha comenzado la partida, y el id del jugador ganador (1 o 2) para pasar a la pantalla del jugador ganador.
+- **Formato de Datos (Cliente a servidor):**
+  ```json
+  <playerId>
+  ```
+  - `playerId`: Id del jugador que ha completado su requisito para ganar, 1 si es exorcista, 2 si es demonio.
+- **Formato de Datos (Servidor a cliente):**
+  ```json
+  [gameState, winningId (optional)]
+  ```
+  - `gameState`: 0 si un jugador se ha desconectado durante la selección de personaje. Mayor de 0 si la partida ha comenzado.
+  - `winningId`: Id del jugador ganador para mostrar la escena del jugador ganador.
+
+## Ejemplo de la comunicación para la creación y funcionamiento de una partida
+
+A continuación se va a explicar un breve ejemplo de la comunicación de mensajes para la creación de una partida y su funcionamiento. En este ejemplo los jugadores crean una partida, seleccionan su personaje y llevan a cabo la partida hasta que uno gana.
+
+  1. Los jugadores pulsan el botón de Online para comenzar una partida online. Comienza a cargarse la escena de juego.
+  2. Al finalizar de cargar la escena de juego, se pausa, **se conecta al Websocket** y espera a que se conecte otro jugador.
+  3. Al conectarse dos jugadores, se crea una partida y envía mensajes de tipo **"c"**, **"g"** e **"i"** a ambos jugadores para indicarles las velas del mapa, la futura posición del crucifijo, y el id del personaje que les ha tocado, 1 si es exorcista y 2 si es demonio. Los jugadores envían el primer mensaje de ready **"r"** para indicar que ya pueden empezar la selección de personaje, y reciven **"r"** para comenzar la selección de personaje.
+  4. Los jugadores envían su personaje seleccionado mediante un mensaje de tipo **"s"**. Cuando los dos jugadores han seleccionado su personaje, reciben un mensaje de tipo **"s"** con la información de cada personaje escogido.
+  5. Los jugadores envían su segundo mensaje de ready **"r"**. El servidor al recibir ambos mensajes, les envía el segundo **"r"** para permitirles comenzar la partida.
+  6. La escena del juego se reanuda y comienza la partida con las velas ya colocadas en su lugar, está todo listo.
+  7. Los jugadores se mueven enviando y reciviendo mensajes **"p"** y cambiando el estado de las luces con mensajes **"t"**.
+  8. También envían y reciben mensajes **"v"**, **"l"** y **"x"** para la recolección de las velas, activación de los rituales y la recolección del crucifijo.
+  9. Por último, si un jugador pulsa su botón de ganar, envía un mensaje de game over **"o"**, indicando que ese ha sido el jugador ganador. El servidor les envía otro mensaje **"o"** para finalizar la partida y cambiar a la escena post-partida. Los jugadores son desconectados del Websocket y el servidor borra los jugadores y la partida.
