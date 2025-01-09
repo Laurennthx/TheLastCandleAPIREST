@@ -4,7 +4,7 @@
  */
 const MSG_TYPES = {
     INIT: 'i',        // Initialize game state      LISTO
-    READY: 'r',        // Initialize game state     LISTO
+    READY: 'r',        // Player ready              LISTO
     SKIN: 's',        // Update selected skins      LISTO
     POS: 'p',         // Update player position     LISTO
     CANDLES: 'c',      // Spawn candles             LISTO

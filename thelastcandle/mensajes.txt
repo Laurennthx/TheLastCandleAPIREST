@@ -8,3 +8,6 @@
 7;1;jaja
 8;2;holaaa
 9;2;Voy a entrar
+10;2;usuario 2 está conectado :0
+11;2;Y el 1 sigue conectado
+12;andre;Probando

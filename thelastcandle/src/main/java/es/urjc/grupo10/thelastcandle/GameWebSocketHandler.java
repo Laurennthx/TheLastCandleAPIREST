@@ -167,7 +167,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     /**
      * Initializes a new game by sending initial states to players and starting the
      * game loop.
-     * Message format 'i': Initial game state with player positions and candles
+     * Message format 'i': Ids de los jugadores, 1 exorcista, 2 demonio
      * Message format 'p': Ids and positions of the candles to generate
      */
     private void gameInit(Game game) {

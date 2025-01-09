@@ -41,6 +41,9 @@ public class UsersController {
         try {
             boolean removed = this.userDAO.deleteUser(username);
             if (removed) {
+                // Eliminarlo también de los usuarios conectados ya que no 
+                // tiene sentido almacenar datos de un usuario que ha sido eliminado
+                apiStatusService.removeUser(username);
                 return ResponseEntity.noContent().build();
             } else {
                 return ResponseEntity.notFound().build();
@@ -142,5 +145,15 @@ public class UsersController {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    @PostMapping("/{username}/keepAlive")
+    public ResponseEntity<?> keepAlive(@PathVariable String username) {
+        Optional<User> optionalUser = userDAO.getUser(username);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+        apiStatusService.hasSeen(username); // Actualizar el timestamp del usuario
+        return ResponseEntity.ok("Tiempo de usuario actualizado");
     }
 }
