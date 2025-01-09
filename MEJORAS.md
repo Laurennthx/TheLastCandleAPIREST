@@ -17,12 +17,20 @@
 En este documento se detalla las mejoras realizadas sobre nuestro proyecto de prácticas para la asignatura de juegos en red: ‘The Last Candle’.
 
 ### Menú de Pausa
-Se ha implementado un menú de pausa al que acceder durante el transcurso de la partida. 
+Se ha implementado un menú de pausa al que acceder durante el transcurso de la partida. Desde este menú se puede apagar o encender la música, crear una nueva partida, ir al menú o reanudar la partida. Mientras está abierto el menú de pausa los personajes no pueden moverse ni interactuar en el caso de una partida local. En el caso de una partida online, solo se congela el personaje del usuario que tiene abierto el menú de pausa.
 
+![menuPausa](imagenesGDD/MenuPausa.png)
 
 ### Chat 
-Se ha implementado un chat en tiempo real al que se puede acceder desde el menú principal y desde la partida. 
+Se ha implementado un chat en tiempo real al que se puede acceder desde el menú principal y desde la partida tanto local como online. Tras registrarse o hacer login, cualquier usuario puede conectarse al chat con tan solo pulsar el botón del chat (icono con forma de carta). Ahí, el usuario puede ver los últimos mensajes enviados con el formato "nombreUsuario: mensaje" y puede enviar sus propios mensajes escribiendo en el cuadrado de texto y pulsando enter, o el botón de enviar. Además mientras que está abierto el chat se refrescan los mensajes automáticamente, mostrando los mensajes que envían otros usuarios en tiempo real.
 
+Para su implementación, se ha creado la estructura del chat y el input usando un archivo HTML con sus secciones para mostrar los mensajes, escribir, y el botón de enviar. Este HTML se invoca siempre desde una escena de Phaser 3, "chat.js". Cada vez que se pulsa el botón del chat, se activa la escena "chat.js" encima de la actual usando la función "launch" para no detener la escena de fondo. Cabe resaltar que al abrir el chat en medio de la partida, *se congela el movimiento e interacción del personaje para evitar moverlo accidentalmente* mientras se escribe en el chat. Para cerrar y reanudar el chat se usan las funciones "sleep" y "wake", propias de las escenas de phaser.
+
+Por último, para enviar y recibir mensajes en el chat se usan peticiones de API REST Get y Post. Mientras se tiene el chat abierto se hacen peticiones Get cada segundo para refrescar los mensajes, y se envían nuevos mensajes usando Post.
+
+![chatMenu](imagenesGDD/ChatJuego.png)
+
+![chatJuego](imagenesGDD/ChatMenuPrincipal.png)
 
 ### Selección de skins
 Se ha creado una skin nueva para cada personaje haciendo uso de algunos de los diseños descartados, junto con sus animaciones. Además de una escena de selección de skin para que el jugador elija. 
@@ -39,10 +47,10 @@ Varios de los muebles diseñiados, gracias a su envergadura y distribución en l
 
 ***Imagen de los muebles implementados***
  
- ![Muebles1](imagenesGDD/MueblesFinales1.png)
+ ![MueblesFInales1](imagenesGDD/MueblesFinales1.png)
  ![MueblesFinales2](https://github.com/user-attachments/assets/7d27d50b-cb04-478c-8eb2-5f82f6985614)
 
-## Plataformas
+### Plataformas
 A continuación se encuentran los enlaces con los que acceder al juego en las plataformas públicas seleccionadas:
 
 - Kongregate: 
