@@ -482,7 +482,7 @@ Este apartado explica el protocolo usado para la comunicación de Websockets par
 ### 5. **Generación de velas (`c`):**
 
 - **Tipo:** `c`
-- **Descripción:** El servidor genera la posición de las velas en el mapa y las envía a los jugadores para que se vean reflejadas en sus pantallas.
+- **Descripción:** El servidor genera las posiciones de las velas en el mapa y las envía a los jugadores para que se vean reflejadas en sus pantallas.
 - **Formato de Datos (Servidor a cliente):**
   ```json
   [[candleId, x, y], ..., [candleIdn, xn, yn]]
@@ -523,7 +523,7 @@ Este apartado explica el protocolo usado para la comunicación de Websockets par
 ### 8. **Generación del crucifijo (`g`):**
 
 - **Tipo:** `g`
-- **Descripción:** Enviado por el servidor a ambos juagdores para indicar la posición en la que se generará el crucifijo en el mapa.
+- **Descripción:** El servidor genera la posición del crucifijo y la envía a ambos juagdores para indicar donde se generará el crucifijo en el mapa tras el comienzo de la partida.
 - **Formato de Datos (Servidor a cliente):**
   ```json
   [x, y]
@@ -533,7 +533,7 @@ Este apartado explica el protocolo usado para la comunicación de Websockets par
 ### 9. **Recolección del crucifijo (`x`):**
 
 - **Tipo:** `x`
-- **Descripción:** Enviado por el exorcista al colisionar con el crucifijo. Enviado por el servidor a ambos juagdores para aplicar los efectos y quitar el crucifijo del mapa.
+- **Descripción:** Enviado por el exorcista al colisionar con el crucifijo. Enviado por el servidor a ambos juagdores para aplicar los efectos y eliminar el crucifijo del mapa.
 - **Formato de Datos (Cliente a servidor):**
   ```json
   null (mensaje vacío)
