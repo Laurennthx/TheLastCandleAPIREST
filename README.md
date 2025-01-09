@@ -413,6 +413,13 @@ Para poder ejecutar el .jar del proyecto se tienen que realizar los siguientes p
 
 # FASE 4: WEBSOCKETS
 
+## Diagrama de clases de WebSockets
+
+A continuación, se muestran las relaciones entre las distintas clases que forman el proyecto:
+
+![Diagrama_De_Clases2](imagenesGDD/DiagramaDeClasesWebSockets.png)
+
+
 ## Protocolo de comunicación
 
 Este apartado explica el protocolo usado para la comunicación de Websockets para nuestro juego. Para comunicarse entre cliente y servidor el protocolo usa diferentes tipos de mensajes los cuales están formados por un único caracter para indicar su tipo, pudiendo enviar también información adicional. A continuación se explicarán los diferentes tipos de mensajes:
@@ -580,3 +587,11 @@ A continuación se va a explicar un breve ejemplo de la comunicación de mensaje
   7. Los jugadores se mueven enviando y reciviendo mensajes **"p"** y cambiando el estado de las luces con mensajes **"t"**.
   8. También envían y reciben mensajes **"v"**, **"l"** y **"x"** para la recolección de las velas, activación de los rituales y la recolección del crucifijo.
   9. Por último, si un jugador pulsa su botón de ganar, envía un mensaje de game over **"o"**, indicando que ese ha sido el jugador ganador. El servidor les envía otro mensaje **"o"** para finalizar la partida y cambiar a la escena post-partida. Los jugadores son desconectados del Websocket y el servidor borra los jugadores y la partida.
+
+
+## Diagrama de navegación final
+
+A continuación, se muestra actualizado el diagrama de las interfaces que componen el videojuego final:
+
+![Diagrama_De_Navegacion_Final](imagenesGDD/DiagramaNavegacionFinal.png)
+
