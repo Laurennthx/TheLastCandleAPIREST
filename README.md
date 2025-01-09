@@ -426,6 +426,9 @@ Para esta fase implementamos mediante websockets:
 - Sistema de victoria por abandono
 - Chat online tanto en menú como dentro del juego.
 
+## Vídeo explicativo
+https://youtu.be/OsXKIK17Kq0
+
 ## Diagrama de clases de WebSockets
 
 A continuación, se muestran las relaciones entre las distintas clases que forman el proyecto:
