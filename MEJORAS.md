@@ -36,8 +36,9 @@ Por último, para enviar y recibir mensajes en el chat se usan peticiones de API
 Se ha creado una skin nueva para cada personaje haciendo uso de algunos de los diseños descartados, junto con sus animaciones. Además de una escena de selección de skin para que el jugador elija. 
 
 ![seleccionDemonio](https://github.com/user-attachments/assets/d43de35c-a916-4937-b8cd-8cfb0449c0d9)
-
 ![seleccionExorcista](https://github.com/user-attachments/assets/9f1c4ea3-1eab-4f89-ae5e-276eefdf5fbd)
+![demon2Spritesheet](https://github.com/user-attachments/assets/3c8c8ff1-3280-4351-abfd-74ce31f09e5f)
+![Exorcista2Spritesheet](https://github.com/user-attachments/assets/f028f648-fa6b-4367-b6d4-2465aacb7998)
 
 ### Muebles del mapa
 Se han diseñado, texturizado e implementado los distintos muebles pertenecientes al mapa para dotar a la casa de más variedad, verosimilitud y narrativa. En concreto, se han diseñado muebles con un estilo gótico, utilizando tonos oscuros que combinan con las paredes y el suelo del mapa. Los muebles cuentan con detalles de desgaste o de oxidación (en el caso de los muebles del baño) para remarcar el contexto de la historia de la mansión abandonada, además de diferentes cajas de mudanza distribuidas por el mapa que dan la sensación de mudanza inacabada aportando más a la historia.
@@ -49,6 +50,10 @@ Varios de los muebles diseñiados, gracias a su envergadura y distribución en l
  
  ![MueblesFInales1](imagenesGDD/MueblesFinales1.png)
  ![MueblesFinales2](https://github.com/user-attachments/assets/7d27d50b-cb04-478c-8eb2-5f82f6985614)
+
+ ***Imagen del mapa final***
+
+ ![fondoFinal](https://github.com/user-attachments/assets/5ab3e5a4-d41e-4d31-8819-736795e4b4af)
 
 ### Plataformas
 A continuación se encuentran los enlaces con los que acceder al juego en las plataformas públicas seleccionadas:
