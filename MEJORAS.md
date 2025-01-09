@@ -11,6 +11,9 @@
 - https://github.com/Laurennthx/TheLastCandleAPIREST
 - https://github.com/Laurennthx/TheLastCandle
 
+#### Vídeo explicativo
+  https://youtu.be/OsXKIK17Kq0
+
 ---
 
 ## Mejoras realizadas
