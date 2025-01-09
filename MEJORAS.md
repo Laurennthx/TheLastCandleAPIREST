@@ -56,10 +56,7 @@ Varios de los muebles diseñiados, gracias a su envergadura y distribución en l
  ![fondoFinal](https://github.com/user-attachments/assets/5ab3e5a4-d41e-4d31-8819-736795e4b4af)
 
 ### Plataformas
-A continuación se encuentran los enlaces con los que acceder al juego en las plataformas públicas seleccionadas:
+A continuación se encuentran los enlaces con los que acceder al juego en las plataformas públicas seleccionadas. Para accer a ellos lo único que hay que hacer es acceder al enlace y clicar sobre el botón "Run Game" o "Play Game", según la web.
 
-- Kongregate: 
-- Armorgames:
-- Newgrounds:
-- Gamejolt:
-- Itch.io: 
+- Newgrounds: https://www.newgrounds.com/portal/view/963897
+- Itch.io: https://thelastcandlemc.itch.io/thelastcandle
