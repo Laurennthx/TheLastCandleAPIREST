@@ -14,6 +14,10 @@ class OptionsScene extends Phaser.Scene {
 
         this.load.image("backButton", "assets/UI/return.png");
 
+        this.load.image("yesButton", "assets/UI/MensajeBorrar/YesButton.png");
+        this.load.image("noButton", "assets/UI/MensajeBorrar/NoButton.png");
+        this.load.image("messageDelete", "assets/UI/MensajeBorrar/MensajeBorrarCuenta.png");
+
         // nuevos ajustes
         this.load.image("BGInput", "assets/UI/ajustes/BGInput.png");
         this.load.image("ChangeB", "assets/UI/ajustes/ChangeB.png");
@@ -54,8 +58,7 @@ class OptionsScene extends Phaser.Scene {
                 this.sound.play("hover"); // Reproduce sonido al pasar el cursor
             });
         off_music.setScale(0.5, 0.5);
-
-
+        
 
         // Cambiar contraseña 
 
@@ -83,17 +86,52 @@ class OptionsScene extends Phaser.Scene {
             });
         changeB.setScale(0.5);
 
+        // se crea un panel con los elementos para aceptar o rechazar borrar la cuenta
+        const panelDelete = this.add.container(400,300).setVisible(false);
+        const panelBackground = this.add.image(560, 210, "messageDelete");
+
+        // se crea el botón de aceptar
+        const yesButton = this.add.image(430, 320, "yesButton").setInteractive();
+        yesButton.setScale(0.7, 0.7);
+
+        // se crea el botón de rechazar
+        const noButton = this.add.image(650, 320, "noButton").setInteractive();
+        noButton.setScale(0.7, 0.7);
+
+        panelDelete.add([panelBackground, yesButton, noButton]);
 
         // delete account
         const deleteAccountB = this.add.image(1600, 750, "deleteAccountB")
             .setInteractive()
             .on('pointerdown', () => {
-                this.handleDeleteAccount(window.GameData.currentUser)
+                this.sound.play("select");
+                panelDelete.setVisible(true);
             })
             .on('pointerover', () => {
                 this.sound.play("hover"); // Reproduce sonido al pasar el cursor
             });
         deleteAccountB.setScale(0.5);
+
+        // dont delete the account
+        noButton.on('pointerdown', () => {
+                this.sound.play("select");
+                this.scene.stop("OptionsScene");
+                this.scene.start("OptionsScene");
+            })
+            .on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            });
+        
+
+        // accept deleting the account
+        yesButton.on('pointerdown', () => {
+                this.sound.play("select");
+                this.handleDeleteAccount(window.GameData.currentUser)
+                this.panelDelete.setVisible(false);
+            })
+            .on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            });
 
 
         // boton back
@@ -234,42 +272,37 @@ class OptionsScene extends Phaser.Scene {
             console.error("User not found.");
             this.showError("User not found.", posx, posy);
             return;
-        }
+        } else {
+            this.errorText.setText("Loading...");
+            this.errorText.setPosition(posx, posy);
+            this.errorText.setStyle({ fill: '#000000' });
+            this.errorText.setAlpha(1); // Mostrar el mensaje
 
-        // Mostrar un mensaje de confirmación antes de eliminar el usuario
-        if (!confirm("Are you sure you want to delete your user? This action cannot be undone.")) {
-            return;
-        }
+            $.ajax({
+                url: "/api/users/" + username,
+                method: "DELETE",
+                success: () => {
+                    console.log("User deleted successfully.");
+                    this.showError("User deleted successfully.", posx, posy, '#000000'); // Mensaje en verde
 
-        this.errorText.setText("Loading...");
-        this.errorText.setPosition(posx, posy);
-        this.errorText.setStyle({ fill: '#000000' });
-        this.errorText.setAlpha(1); // Mostrar el mensaje
-
-
-        $.ajax({
-            url: "/api/users/" + username,
-            method: "DELETE",
-            success: () => {
-                console.log("User deleted successfully.");
-                this.showError("User deleted successfully.", posx, posy, '#000000'); // Mensaje en verde
-
-                // Redirigir a otra escena o realizar una acción
-                setTimeout(() => {
-                    this.scene.stop("OptionsScene");
-                    this.scene.start("WelcomeScene");
-                }, 1500);
-            },
-            error: (xhr) => {
-                if (xhr.status === 404) {
-                    console.error("User not found.");
-                    this.showError("User not found.", posx, posy);
-                } else {
-                    console.error("Error deleting the user:", xhr.responseText);
-                    this.showError("Error deleting the user.", posx, posy);
+                    // Redirigir a otra escena o realizar una acción
+                    setTimeout(() => {
+                        this.scene.stop("OptionsScene");
+                        this.scene.start("WelcomeScene");
+                    },  1500);
+                },
+                error: (xhr) => {
+                    if (xhr.status === 404) {
+                        console.error("User not found.");
+                        this.showError("User not found.", posx, posy);
+                    } else {
+                        console.error("Error deleting the user:", xhr.responseText);
+                        this.showError("Error deleting the user.", posx, posy);
+                    }
                 }
-            }
-        });
+            });
+        }   
     }
 
+    
 }
