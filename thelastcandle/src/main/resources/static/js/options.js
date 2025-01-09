@@ -58,7 +58,21 @@ class OptionsScene extends Phaser.Scene {
                 this.sound.play("hover"); // Reproduce sonido al pasar el cursor
             });
         off_music.setScale(0.5, 0.5);
-        
+
+
+        // boton back
+        this.returnButton = this.add.image(175, 90, "backButton")
+            .setInteractive()
+            .on('pointerdown', () => {
+                this.sound.play("select");
+                this.scene.stop("OptionsScene");
+                this.scene.start("MenuScene");
+            })
+            .on('pointerover', () => {
+                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+            });
+        this.returnButton.setScale(0.4, 0.4);
+
 
         // Cambiar contraseña 
 
@@ -87,7 +101,7 @@ class OptionsScene extends Phaser.Scene {
         changeB.setScale(0.5);
 
         // se crea un panel con los elementos para aceptar o rechazar borrar la cuenta
-        const panelDelete = this.add.container(400,300).setVisible(false);
+        this.panelDelete = this.add.container(400, 300).setVisible(false);
         const panelBackground = this.add.image(560, 210, "messageDelete");
 
         // se crea el botón de aceptar
@@ -98,14 +112,14 @@ class OptionsScene extends Phaser.Scene {
         const noButton = this.add.image(650, 320, "noButton").setInteractive();
         noButton.setScale(0.7, 0.7);
 
-        panelDelete.add([panelBackground, yesButton, noButton]);
+        this.panelDelete.add([panelBackground, yesButton, noButton]);
 
         // delete account
         const deleteAccountB = this.add.image(1600, 750, "deleteAccountB")
             .setInteractive()
             .on('pointerdown', () => {
                 this.sound.play("select");
-                panelDelete.setVisible(true);
+                this.panelDelete.setVisible(true);
             })
             .on('pointerover', () => {
                 this.sound.play("hover"); // Reproduce sonido al pasar el cursor
@@ -114,38 +128,23 @@ class OptionsScene extends Phaser.Scene {
 
         // dont delete the account
         noButton.on('pointerdown', () => {
-                this.sound.play("select");
-                this.scene.stop("OptionsScene");
-                this.scene.start("OptionsScene");
-            })
-            .on('pointerover', () => {
-                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-            });
-        
+            this.sound.play("select");
+            this.scene.stop("OptionsScene");
+            this.scene.start("OptionsScene");
+        }).on('pointerover', () => {
+            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+        });
+
 
         // accept deleting the account
         yesButton.on('pointerdown', () => {
-                this.sound.play("select");
-                this.handleDeleteAccount(window.GameData.currentUser)
-                this.panelDelete.setVisible(false);
-            })
-            .on('pointerover', () => {
-                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-            });
-
-
-        // boton back
-        const returnButton = this.add.image(175, 90, "backButton")
-            .setInteractive()
-            .on('pointerdown', () => {
-                this.sound.play("select");
-                this.scene.stop("OptionsScene");
-                this.scene.start("MenuScene");
-            })
-            .on('pointerover', () => {
-                this.sound.play("hover"); // Reproduce sonido al pasar el cursor
-            });
-        returnButton.setScale(0.4, 0.4);
+            this.sound.play("select");
+            this.handleDeleteAccount(window.GameData.currentUser)
+            this.panelDelete.setVisible(false);
+            this.returnButton.destroy(); // Eliminar el botón de return para evitar problemas
+        }).on('pointerover', () => {
+            this.sound.play("hover"); // Reproduce sonido al pasar el cursor
+        });
 
 
         // Activar entrada de teclado
@@ -289,7 +288,7 @@ class OptionsScene extends Phaser.Scene {
                     setTimeout(() => {
                         this.scene.stop("OptionsScene");
                         this.scene.start("WelcomeScene");
-                    },  1500);
+                    }, 1500);
                 },
                 error: (xhr) => {
                     if (xhr.status === 404) {
@@ -301,8 +300,8 @@ class OptionsScene extends Phaser.Scene {
                     }
                 }
             });
-        }   
+        }
     }
 
-    
+
 }
