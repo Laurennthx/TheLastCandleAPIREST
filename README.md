@@ -412,6 +412,19 @@ Para poder ejecutar el .jar del proyecto se tienen que realizar los siguientes p
 
 
 # FASE 4: WEBSOCKETS
+Los WebSockets son un protocolo de comunicación que permite una conexión bidireccional y persistente entre un cliente (como un navegador web) y un servidor. A diferencia de las peticiones HTTP tradicionales, que son de tipo "request-response" y finalizan tras enviar y recibir datos, los WebSockets mantienen abierta la conexión, lo que permite el intercambio continuo de datos en tiempo real sin la necesidad de reabrir una conexión cada vez.
+
+Para esta fase implementamos mediante websockets:
+- Pantalla de espera de segundo usuario
+- Selección de skin
+- Comunicación de posiciones
+- Velas recogidas
+- Rituales completados
+- Sistema de victoria mediante la colisión del demonio al exorcista
+- Estado de los interruptores para ambos jugadores
+- Inmunidad mediante el crucifijo para el exorcista
+- Sistema de victoria por abandono
+- Chat online tanto en menú como dentro del juego.
 
 ## Diagrama de clases de WebSockets
 
