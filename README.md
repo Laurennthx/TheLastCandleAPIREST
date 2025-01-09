@@ -13,6 +13,9 @@ https://github.com/Laurennthx/TheLastCandle
 #### Fase 3, 4 y 5
 https://github.com/Laurennthx/TheLastCandleAPIREST
 
+### Youtube
+https://youtu.be/OsXKIK17Kq0
+
 
 ## Introducción
 En este documento se detalla la concepción de nuestro proyecto de prácticas para la asignatura de juegos en red: ‘The Last Candle’. 
