@@ -24,6 +24,10 @@ Se ha implementado un menú de pausa al que acceder durante el transcurso de la 
 Se ha implementado un chat en tiempo real al que se puede acceder desde el menú principal y desde la partida. 
 
 
+### Selección de skins
+Se han diseñado dos nuevas skins (una para el demonio y otra para el exorcista). 
+
+
 ### Muebles del mapa
 Se han diseñado, texturizado e implementado los distintos muebles pertenecientes al mapa para dotar a la casa de más variedad, verosimilitud y narrativa. En concreto, se han diseñado muebles con un estilo gótico, utilizando tonos oscuros que combinan con las paredes y el suelo del mapa. Los muebles cuentan con detalles de desgaste o de oxidación (en el caso de los muebles del baño) para remarcar el contexto de la historia de la mansión abandonada, además de diferentes cajas de mudanza distribuidas por el mapa que dan la sensación de mudanza inacabada aportando más a la historia.
 
@@ -33,8 +37,7 @@ Varios de los muebles diseñiados, gracias a su envergadura y distribución en l
 ***Imagen de los muebles implementados***
  
  ![Muebles1](imagenesGDD/MueblesFinales1.png)
-
-![MueblesFinales2](https://github.com/user-attachments/assets/7d27d50b-cb04-478c-8eb2-5f82f6985614)
+ ![MueblesFinales2](https://github.com/user-attachments/assets/7d27d50b-cb04-478c-8eb2-5f82f6985614)
 
 ## Plataformas
 A continuación se encuentran los enlaces con los que acceder al juego en las plataformas públicas seleccionadas:
