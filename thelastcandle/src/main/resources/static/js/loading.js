@@ -29,10 +29,6 @@ class LoadingScene extends Phaser.Scene {
         this.load.image('divider', 'assets/UI/divider5.png');
 
         // map
-        this.load.image('background1', 'assets/House/fondo3pentagonosPeque1.png')
-        this.load.image('background2', 'assets/House/fondo3pentagonosPeque2.png')
-        this.load.image('background3', 'assets/House/fondo3pentagonosPeque3.png')
-        this.load.image('background4', 'assets/House/fondo3pentagonosPeque4.png')
         this.load.image('background5', 'assets/House/fondo3pentagonosMueblesPeque4.png')
 
         // muebles
@@ -79,17 +75,6 @@ class LoadingScene extends Phaser.Scene {
         this.load.image('textBoxExorcist', 'assets/UI/textBox.png');
         // textBox Demonio gana
         this.load.image('textBoxDemon', 'assets/UI/demonTextBox.png');
-
-        // Animación exorcista
-        this.load.spritesheet('exorcistWalk', 'assets/Animations/Exorcista/Exorcista/spriteSheetExorcista.png', {
-            frameWidth: 1100,  // Ancho de cada fotograma
-            frameHeight: 1920  // Altura de cada fotograma
-        });
-
-        this.load.spritesheet('demonWalk', 'assets/Animations/Demonio/Demonio/spriteSheetDemonio.png', {
-            frameWidth: 1280,  // Ancho de cada fotograma
-            frameHeight: 1853  // Altura de cada fotograma
-        });
     }
 
     create() {

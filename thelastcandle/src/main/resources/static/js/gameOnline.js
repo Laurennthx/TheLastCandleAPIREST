@@ -61,27 +61,26 @@ class GameOnlineScene extends Phaser.Scene {
     preload() {
         // Animación exorcista 1
         this.load.spritesheet('exorcist1', 'assets/Animations/Exorcista/Exorcista/spriteSheetExorcista.png', {
-            frameWidth: 1100,  // Ancho de cada fotograma
+            frameWidth: 1071.25,  // Ancho de cada fotograma
             frameHeight: 1920  // Altura de cada fotograma
         });
 
         // Animación exorcista 2
         this.load.spritesheet('exorcist2', 'assets/Animations/Exorcista2/Exorcista2Spritesheet.png', {
-            frameWidth: 1100,
-            frameHeight: 1920
+            frameWidth: 1071.25,  // Ancho de cada fotograma
+            frameHeight: 1920  // Altura de cada fotograma
         });
-
 
         // Animación demonio 1
         this.load.spritesheet('demon1', 'assets/Animations/Demonio/Demonio/spriteSheetDemonio.png', {
-            frameWidth: 1276,
-            frameHeight: 1853
+            frameWidth: 1253.5,  // Ancho de cada fotograma
+            frameHeight: 1853  // Altura de cada fotograma
         });
 
         // Animación demonio 2
         this.load.spritesheet('demon2', 'assets/Animations/Demonio2/demon2Spritesheet.png', {
-            frameWidth: 1275,
-            frameHeight: 1920
+            frameWidth: 1253.5,  // Ancho de cada fotograma
+            frameHeight: 1853  // Altura de cada fotograma
         });
 
         // menu de pausa
