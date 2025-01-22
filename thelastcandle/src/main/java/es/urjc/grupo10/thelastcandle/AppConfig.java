@@ -23,6 +23,6 @@ public class AppConfig {
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(16);
+        return new BCryptPasswordEncoder(12);   // Cambiado el factor de costo de 16 a 12
     }
 }
